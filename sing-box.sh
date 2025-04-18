@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # 当前脚本版本号
-VERSION='v1.2.6 (2024.10.28)'
+VERSION='v1.2.16 (2025.04.06)'
 
 # 各变量默认值
 GH_PROXY='https://ghproxy.lvedong.eu.org/'
@@ -13,10 +13,10 @@ MAX_PORT=65520
 MIN_HOPPING_PORT=10000
 MAX_HOPPING_PORT=65535
 TLS_SERVER_DEFAULT=addons.mozilla.org
-PROTOCOL_LIST=("XTLS + reality" "hysteria2" "tuic" "ShadowTLS" "shadowsocks" "trojan" "vmess + ws" "vless + ws + tls" "H2 + reality" "gRPC + reality")
-NODE_TAG=("xtls-reality" "hysteria2" "tuic" "ShadowTLS" "shadowsocks" "trojan" "vmess-ws" "vless-ws-tls" "h2-reality" "grpc-reality")
+PROTOCOL_LIST=("XTLS + reality" "hysteria2" "tuic" "ShadowTLS" "shadowsocks" "trojan" "vmess + ws" "vless + ws + tls" "H2 + reality" "gRPC + reality" "AnyTLS")
+NODE_TAG=("xtls-reality" "hysteria2" "tuic" "ShadowTLS" "shadowsocks" "trojan" "vmess-ws" "vless-ws-tls" "h2-reality" "grpc-reality" "anytls")
 CONSECUTIVE_PORTS=${#PROTOCOL_LIST[@]}
-CDN_DOMAIN=("8cc.free.hr" "cm.yutian.us.kg" "fan.yutian.us.kg" "xn--b6gac.eu.org" "dash.cloudflare.com" "skk.moe" "visa.com")
+CDN_DOMAIN=("skk.moe" "ip.sb" "time.is" "cfip.xxxxxxxx.tk" "bestcf.top" "cdn.2020111.xyz" "xn--b6gac.eu.org")
 SUBSCRIBE_TEMPLATE="https://raw.githubusercontent.com/fscarmen/client_template/main"
 
 export DEBIAN_FRONTEND=noninteractive
@@ -27,8 +27,8 @@ mkdir -p $TEMP_DIR
 
 E[0]="Language:\n 1. English (default) \n 2. 简体中文"
 C[0]="${E[0]}"
-E[1]="1. Fixed the bug that clash subscription failed when [-n] re-fetches the subscription; 2. vmess + ws encryption changed from none to auto; 3. Replaced a CDN."
-C[1]="1. 修复 [-n] 重新获取订阅时，clash 订阅失效的bug; 2. vmess + ws 加密方式从none改为auto; 3. 更换了一个 CDN"
+E[1]="1. Added support for the AnyTLS protocol. Thanks to [Betterdoitnow] for providing the configuration. Supports output for clients such as Shadowrocket, Clash Mihomo, and Sing-box; 2. Use OpenRC on Alpine to replace systemctl (Python3-compatible version). "
+C[1]="1. 新增对 AnyTLS 协议的支持，感谢 [Betterdoitnow] 提供的配置。支持小火箭、Clash Mihomo、Sing-box 客户端输出; 2. 在 Alpine 系统中使用 OpenRC 取代兼容 Python3 的 systemctl 实现"
 E[2]="Downloading Sing-box. Please wait a seconds ..."
 C[2]="下载 Sing-box 中，请稍等 ..."
 E[3]="Input errors up to 5 times.The script is aborted."
@@ -169,8 +169,8 @@ E[70]="Please set inSecure in tls to true."
 C[70]="请把 tls 里的 inSecure 设置为 true"
 E[71]="Create shortcut [ sb ] successfully."
 C[71]="创建快捷 [ sb ] 指令成功!"
-E[72]="Path to each client configuration file: $WORK_DIR/subscribe/\n The full template can be found at:\n https://t.me/ztvps/100\n https://github.com/chika0801/sing-box-examples/tree/main/Tun"
-C[72]="各客户端配置文件路径: $WORK_DIR/subscribe/\n 完整模板可参照:\n https://t.me/ztvps/100\n https://github.com/chika0801/sing-box-examples/tree/main/Tun"
+E[72]="Path to each client configuration file: ${WORK_DIR}/subscribe/\n The full template can be found at:\n https://github.com/chika0801/sing-box-examples/tree/main/Tun"
+C[72]="各客户端配置文件路径: ${WORK_DIR}/subscribe/\n 完整模板可参照:\n https://github.com/chika0801/sing-box-examples/tree/main/Tun"
 E[73]="There is no protocol left, if you are sure please re-run [ sb -u ] to uninstall all."
 C[73]="没有协议剩下，如确定请重新执行 [ sb -u ] 卸载所有"
 E[74]="Keep protocols"
@@ -225,6 +225,20 @@ E[98]="Enter the port range, e.g. 50000:51000. Leave blank to disable:"
 C[98]="请输入端口范围，例如 50000:51000，如要禁用请留空:"
 E[99]="The \${SING_BOX_SCRIPT} is detected to be installed. Script exits."
 C[99]="检测到已安装 \${SING_BOX_SCRIPT}，脚本退出!"
+E[100]="Can't get the official latest version. Script exits."
+C[100]="获取不到官方的最新版本，脚本退出!"
+E[101]="The contents of the AnyTLS configuration file need to be updated for the sing_box kernel."
+C[101]="AnyTLS 配置文件内容，需要更新 sing_box 内核"
+E[102]="Backing up old version sing-box to ${WORK_DIR}/sing-box.bak"
+C[102]="已备份旧版本 sing-box 到 ${WORK_DIR}/sing-box.bak"
+E[103]="New version \$ONLINE is running successfully, backup file deleted"
+C[103]="新版本 \$ONLINE 运行成功，已删除备份文件"
+E[104]="New version failed to run \$ONLINE, restoring old version \$LOCAL ..."
+C[104]="新版本 \$ONLINE 运行失败，正在恢复旧版本 \$LOCAL ..."
+E[105]="Successfully restored old version \$LOCAL"
+C[105]="已成功恢复旧版本 \$LOCAL"
+E[106]="Failed to restore old version \$LOCAL, please check manually"
+C[106]="恢复旧版本 \$LOCAL 失败，请手动检查"
 
 # 自定义字体彩色，read 函数
 warning() { echo -e "\033[31m\033[01m$*\033[0m"; }  # 红色
@@ -239,25 +253,54 @@ check_cdn() {
   [ -n "$GH_PROXY" ] && wget --server-response --quiet --output-document=/dev/null --no-check-certificate --tries=2 --timeout=3 https://raw.githubusercontent.com/fscarmen/sing-box/main/README.md >/dev/null 2>&1 && unset GH_PROXY
 }
 
-# 检测是否解锁 chatGPT，以决定是否使用 warp 链式代理或者是 direct out
+# 检测是否解锁 chatGPT，以决定是否使用 warp 链式代理或者是 direct out，此处判断改编自 https://github.com/lmc999/RegionRestrictionCheck
 check_chatgpt() {
-  local CHECK_STACK=$1
-  local SUPPORT_COUNTRY=(AD AE AF AG AL AM AO AR AT AU AZ BA BB BD BE BF BG BH BI BJ BN BO BR BS BT BW BZ CA CD CF CG CH CI CL CM CO CR CV CY CZ DE DJ DK DM DO DZ EC EE EG ER ES ET FI FJ FM FR GA GB GD GE GH GM GN GQ GR GT GW GY HN HR HT HU ID IE IL IN IQ IS IT JM JO JP KE KG KH KI KM KN KR KW KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MG MH MK ML MM MN MR MT MU MV MW MX MY MZ NA NE NG NI NL NO NP NR NZ OM PA PE PG PH PK PL PS PT PW PY QA RO RS RW SA SB SC SD SE SG SI SK SL SM SN SO SR SS ST SV SZ TD TG TH TJ TL TM TN TO TR TT TV TW TZ UA UG US UY UZ VA VC VN VU WS YE ZA ZM ZW)
-  [[ "${SUPPORT_COUNTRY[@]}" =~ $(wget --no-check-certificate -$CHECK_STACK -qO- --tries=3 --timeout=2 https://chat.openai.com/cdn-cgi/trace | awk -F '=' '/loc/{print $2}') ]] && echo 'unlock' || echo 'ban'
+  local CHECK_STACK=-$1
+  local UA_BROWSER="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+  local UA_SEC_CH_UA='"Google Chrome";v="125", "Chromium";v="125", "Not.A/Brand";v="24"'
+  wget --help | grep -q '\-\-ciphers' && local IS_CIPHERS=is_ciphers
+
+  # 首先检查API访问
+  local CHECK_RESULT1=$(wget --timeout=2 --tries=2 --retry-connrefused --waitretry=5 ${CHECK_STACK} -qO- --content-on-error --header='authority: api.openai.com' --header='accept: */*' --header='accept-language: en-US,en;q=0.9' --header='authorization: Bearer null' --header='content-type: application/json' --header='origin: https://platform.openai.com' --header='referer: https://platform.openai.com/' --header="sec-ch-ua: ${UA_SEC_CH_UA}" --header='sec-ch-ua-mobile: ?0' --header='sec-ch-ua-platform: "Windows"' --header='sec-fetch-dest: empty' --header='sec-fetch-mode: cors' --header='sec-fetch-site: same-site' --user-agent="${UA_BROWSER}" 'https://api.openai.com/compliance/cookie_requirements')
+
+  [ -z "$CHECK_RESULT1" ] && grep -qw is_ciphers <<< "$IS_CIPHERS" && local CHECK_RESULT1=$(wget --timeout=2 --tries=2 --retry-connrefused --waitretry=5 ${CHECK_STACK} --ciphers=DEFAULT@SECLEVEL=1 --no-check-certificate -qO- --content-on-error --header='authority: api.openai.com' --header='accept: */*' --header='accept-language: en-US,en;q=0.9' --header='authorization: Bearer null' --header='content-type: application/json' --header='origin: https://platform.openai.com' --header='referer: https://platform.openai.com/' --header="sec-ch-ua: ${UA_SEC_CH_UA}" --header='sec-ch-ua-mobile: ?0' --header='sec-ch-ua-platform: "Windows"' --header='sec-fetch-dest: empty' --header='sec-fetch-mode: cors' --header='sec-fetch-site: same-site' --user-agent="${UA_BROWSER}" 'https://api.openai.com/compliance/cookie_requirements')
+
+  # 如果API检测失败或者检测到unsupported_country,直接返回ban
+  if [ -z "$CHECK_RESULT1" ] || grep -qi 'unsupported_country' <<< "$CHECK_RESULT1"; then
+    echo "ban"
+    return
+  fi
+
+  # API检测通过后,继续检查网页访问
+  local CHECK_RESULT2=$(wget --timeout=2 --tries=2 --retry-connrefused --waitretry=5 ${CHECK_STACK} -qO- --content-on-error --header='authority: ios.chat.openai.com' --header='accept: */*;q=0.8,application/signed-exchange;v=b3;q=0.7' --header='accept-language: en-US,en;q=0.9' --header="sec-ch-ua: ${UA_SEC_CH_UA}" --header='sec-ch-ua-mobile: ?0' --header='sec-ch-ua-platform: "Windows"' --header='sec-fetch-dest: document' --header='sec-fetch-mode: navigate' --header='sec-fetch-site: none' --header='sec-fetch-user: ?1' --header='upgrade-insecure-requests: 1' --user-agent="${UA_BROWSER}" https://ios.chat.openai.com/)
+
+  [ -z "$CHECK_RESULT2" ] && grep -qw is_ciphers <<< "$IS_CIPHERS" && local CHECK_RESULT2=$(wget --timeout=2 --tries=2 --retry-connrefused --waitretry=5 ${CHECK_STACK} --ciphers=DEFAULT@SECLEVEL=1 --no-check-certificate -qO- --content-on-error --header='authority: ios.chat.openai.com' --header='accept: */*;q=0.8,application/signed-exchange;v=b3;q=0.7' --header='accept-language: en-US,en;q=0.9' --header="sec-ch-ua: ${UA_SEC_CH_UA}" --header='sec-ch-ua-mobile: ?0' --header='sec-ch-ua-platform: "Windows"' --header='sec-fetch-dest: document' --header='sec-fetch-mode: navigate' --header='sec-fetch-site: none' --header='sec-fetch-user: ?1' --header='upgrade-insecure-requests: 1' --user-agent="${UA_BROWSER}" https://ios.chat.openai.com/)
+
+  # 检查第二个结果
+  if [ -z "$CHECK_RESULT2" ] || grep -qi 'VPN' <<< "$CHECK_RESULT2"; then
+    echo "ban"
+  else
+    echo "unlock"
+  fi
 }
 
 # 脚本当天及累计运行次数统计
 statistics_of_run-times() {
-  local COUNT=$(wget --no-check-certificate -qO- --tries=2 --timeout=2 "https://hit.forvps.gq/https://raw.githubusercontent.com/fscarmen/sing-box/main/sing-box.sh" 2>&1 | grep -m1 -oE "[0-9]+[ ]+/[ ]+[0-9]+") &&
-  TODAY=$(awk -F ' ' '{print $1}' <<< "$COUNT") &&
-  TOTAL=$(awk -F ' ' '{print $3}' <<< "$COUNT")
+  local UPDATE_OR_GET=$1
+  local SCRIPT=$2
+  if grep -q 'update' <<< "$UPDATE_OR_GET"; then
+    { wget -qO- --timeout=3 "https://stat-api.netlify.app/updateStats?script=${SCRIPT}" > $TEMP_DIR/statistics; }&
+  elif grep -q 'get' <<< "$UPDATE_OR_GET"; then
+    [ -s $TEMP_DIR/statistics ] && [[ $(cat $TEMP_DIR/statistics) =~ \"todayCount\":([0-9]+),\"totalCount\":([0-9]+) ]] && local TODAY="${BASH_REMATCH[1]}" && local TOTAL="${BASH_REMATCH[2]}" && rm -f $TEMP_DIR/statistics
+    hint "\n*******************************************\n\n $(text 55) \n"
+  fi
 }
 
 # 选择中英语言
 select_language() {
   if [ -z "$L" ]; then
-    if [ -s $WORK_DIR/language ]; then
-      L=$(cat $WORK_DIR/language)
+    if [ -s ${WORK_DIR}/language ]; then
+      L=$(cat ${WORK_DIR}/language)
     else
       L=E && hint "\n $(text 0) \n" && reading " $(text 24) " LANGUAGE
       [ "$LANGUAGE" = 2 ] && L=C
@@ -364,7 +407,7 @@ input_argo_auth() {
   fi
 
   if [[ -z "$ARGO_DOMAIN" && ( "$ARGO_DOMAIN" =~ trycloudflare\.com$ || "$IS_CHANGE_ARGO" = 'is_add_protocols' || "$IS_CHANGE_ARGO" = 'is_install' || "$NONINTERACTIVE_INSTALL" = 'noninteractive_install' ) ]]; then
-    ARGO_RUNS="$WORK_DIR/cloudflared tunnel --edge-ip-version auto --no-autoupdate --url http://localhost:$PORT_NGINX"
+    ARGO_RUNS="${WORK_DIR}/cloudflared tunnel --edge-ip-version auto --no-autoupdate --url http://localhost:$PORT_NGINX"
   elif [ -n "${ARGO_DOMAIN}" ]; then
     if [ -z "${ARGO_AUTH}" ]; then
       until [[ "$ARGO_AUTH" =~ TunnelSecret || "$ARGO_AUTH" =~ ^[A-Z0-9a-z=]{120,250}$ || "$ARGO_AUTH" =~ .*cloudflared.*service[[:space:]]+install[[:space:]]+[A-Z0-9a-z=]{1,100} ]]; do
@@ -378,16 +421,16 @@ input_argo_auth() {
     if [[ "$ARGO_AUTH" =~ TunnelSecret ]]; then
       ARGO_TYPE=is_json_argo
       ARGO_JSON=${ARGO_AUTH//[ ]/}
-      [ "$IS_CHANGE_ARGO" = 'is_install' ] && export_argo_json_file $TEMP_DIR || export_argo_json_file $WORK_DIR
-      ARGO_RUNS="$WORK_DIR/cloudflared tunnel --edge-ip-version auto --config $WORK_DIR/tunnel.yml run"
+      [ "$IS_CHANGE_ARGO" = 'is_install' ] && export_argo_json_file $TEMP_DIR || export_argo_json_file ${WORK_DIR}
+      ARGO_RUNS="${WORK_DIR}/cloudflared tunnel --edge-ip-version auto --config ${WORK_DIR}/tunnel.yml run"
     elif [[ "$ARGO_AUTH" =~ ^[A-Z0-9a-z=]{120,250}$ ]]; then
       ARGO_TYPE=is_token_argo
       ARGO_TOKEN=$ARGO_AUTH
-      ARGO_RUNS="$WORK_DIR/cloudflared tunnel --edge-ip-version auto run --token ${ARGO_TOKEN}"
+      ARGO_RUNS="${WORK_DIR}/cloudflared tunnel --edge-ip-version auto run --token ${ARGO_TOKEN}"
     elif [[ "$ARGO_AUTH" =~ .*cloudflared.*service[[:space:]]+install[[:space:]]+[A-Z0-9a-z=]{1,100} ]]; then
       ARGO_TYPE=is_token_argo
       ARGO_TOKEN=$(awk -F ' ' '{print $NF}' <<< "$ARGO_AUTH")
-      ARGO_RUNS="$WORK_DIR/cloudflared tunnel --edge-ip-version auto run --token ${ARGO_TOKEN}"
+      ARGO_RUNS="${WORK_DIR}/cloudflared tunnel --edge-ip-version auto run --token ${ARGO_TOKEN}"
     fi
   fi
 }
@@ -401,7 +444,10 @@ change_argo() {
     error "\n $(text 61) "
   fi
 
-  case $(grep "ExecStart=" /etc/systemd/system/argo.service) in
+  # 根据系统类型检查 Argo 服务配置
+  [ "$SYSTEM" = 'Alpine' ] && local ARGO_CONFIG=$(grep '^command_args=' /etc/init.d/argo) || local ARGO_CONFIG=$(grep "ExecStart=" /etc/systemd/system/argo.service)
+
+  case "$ARGO_CONFIG" in
     *--config* )
       ARGO_TYPE='Json'
       ;;
@@ -410,36 +456,45 @@ change_argo() {
       ;;
     * )
       ARGO_TYPE='Try'
-      cmd_systemctl enable argo && sleep 2 && [ "$(systemctl is-active argo)" = 'active' ] && fetch_quicktunnel_domain
+      cmd_systemctl enable argo && sleep 2 && cmd_systemctl status argo &>/dev/null && fetch_quicktunnel_domain
   esac
 
   fetch_nodes_value
   hint "\n $(text 90) \n"
   unset ARGO_DOMAIN
   hint " $(text 91) \n" && reading " $(text 24) " CHANGE_TO
-    case "$CHANGE_TO" in
-      1 )
-        cmd_systemctl disable argo
-        [ -s $WORK_DIR/tunnel.json ] && rm -f $WORK_DIR/tunnel.{json,yml}
-        sed -i "s@ExecStart=.*@ExecStart=$WORK_DIR/cloudflared tunnel --edge-ip-version auto --no-autoupdate --url http://localhost:$PORT_NGINX@g" /etc/systemd/system/argo.service
-        ;;
-      2 )
-        [ -s $WORK_DIR/tunnel.json ] && rm -f $WORK_DIR/tunnel.{json,yml}
-        input_argo_auth is_change_argo
-        cmd_systemctl disable argo
-        if [ -n "$ARGO_TOKEN" ]; then
-          sed -i "s@ExecStart=.*@ExecStart=$WORK_DIR/cloudflared tunnel --edge-ip-version auto run --token ${ARGO_TOKEN}@g" /etc/systemd/system/argo.service
-        elif [ -n "$ARGO_JSON" ]; then
-          sed -i "s@ExecStart=.*@ExecStart=$WORK_DIR/cloudflared tunnel --edge-ip-version auto --config $WORK_DIR/tunnel.yml run@g" /etc/systemd/system/argo.service
-        fi
-        [ -s $WORK_DIR/conf/17_${NODE_TAG[6]}_inbounds.json ] && sed -i "s/VMESS_HOST_DOMAIN.*/VMESS_HOST_DOMAIN\": \"$ARGO_DOMAIN\"/" $WORK_DIR/conf/17_${NODE_TAG[6]}_inbounds.json
-        [ -s $WORK_DIR/conf/18_${NODE_TAG[7]}_inbounds.json ] && sed -i "s/\"server_name\":.*/\"server_name\": \"$ARGO_DOMAIN\",/" $WORK_DIR/conf/18_${NODE_TAG[7]}_inbounds.json
-        ;;
-      * )
-        exit 0
-    esac
 
+  case "$CHANGE_TO" in
+    1 )
+      cmd_systemctl disable argo
+      [ -s ${WORK_DIR}/tunnel.json ] && rm -f ${WORK_DIR}/tunnel.{json,yml}
+
+      # 根据系统类型修改配置文件
+      [ "$SYSTEM" = 'Alpine' ] && sed -i "s@^command_args=.*@command_args=\"--edge-ip-version auto --no-autoupdate --url http://localhost:$PORT_NGINX\"@g" /etc/init.d/argo || sed -i "s@ExecStart=.*@ExecStart=${WORK_DIR}/cloudflared tunnel --edge-ip-version auto --no-autoupdate --url http://localhost:$PORT_NGINX@g" /etc/systemd/system/argo.service
+      ;;
+    2 )
+      [ -s ${WORK_DIR}/tunnel.json ] && rm -f ${WORK_DIR}/tunnel.{json,yml}
+      input_argo_auth is_change_argo
+      cmd_systemctl disable argo
+
+      if [ -n "$ARGO_TOKEN" ]; then
+        [ "$SYSTEM" = 'Alpine' ] && sed -i "s@^command_args=.*@command_args=\"--edge-ip-version auto run --token ${ARGO_TOKEN}\"@g" /etc/init.d/argo || sed -i "s@ExecStart=.*@ExecStart=${WORK_DIR}/cloudflared tunnel --edge-ip-version auto run --token ${ARGO_TOKEN}@g" /etc/systemd/system/argo.service
+      elif [ -n "$ARGO_JSON" ]; then
+        [ "$SYSTEM" = 'Alpine' ] && sed -i "s@^command_args=.*@command_args=\"--edge-ip-version auto --config ${WORK_DIR}/tunnel.yml run\"@g" /etc/init.d/argo || sed -i "s@ExecStart=.*@ExecStart=${WORK_DIR}/cloudflared tunnel --edge-ip-version auto --config ${WORK_DIR}/tunnel.yml run@g" /etc/systemd/system/argo.service
+      fi
+
+      # 更新相关配置文件中的域名
+      [ -s ${WORK_DIR}/conf/17_${NODE_TAG[6]}_inbounds.json ] && sed -i "s/VMESS_HOST_DOMAIN.*/VMESS_HOST_DOMAIN\": \"$ARGO_DOMAIN\"/" ${WORK_DIR}/conf/17_${NODE_TAG[6]}_inbounds.json
+      [ -s ${WORK_DIR}/conf/18_${NODE_TAG[7]}_inbounds.json ] && sed -i "s/\"server_name\":.*/\"server_name\": \"$ARGO_DOMAIN\",/" ${WORK_DIR}/conf/18_${NODE_TAG[7]}_inbounds.json
+      ;;
+    * )
+      exit 0
+  esac
+
+  # 启用 Argo 服务
   cmd_systemctl enable argo
+
+  # 更新节点信息和配置
   fetch_nodes_value
   export_nginx_conf_file
   export_list
@@ -474,52 +529,88 @@ check_brutal() {
 
 # 查安装及运行状态，下标0: sing-box，下标1: argo，下标2：docker；状态码: 26 未安装， 27 已安装未运行， 28 运行中
 check_install() {
-  [[ "$IS_SUB" = 'is_sub' || -s $WORK_DIR/subscribe/qr ]] && IS_SUB=is_sub || IS_SUB=no_sub
-  if ls $WORK_DIR/conf/*${NODE_TAG[1]}_inbounds.json >/dev/null 2>&1; then
+  [[ "$IS_SUB" = 'is_sub' || -s ${WORK_DIR}/subscribe/qr ]] && IS_SUB=is_sub || IS_SUB=no_sub
+  if ls ${WORK_DIR}/conf/*${NODE_TAG[1]}_inbounds.json >/dev/null 2>&1; then
     check_port_hopping_nat
     [ -n "$PORT_HOPPING_END" ] && IS_HOPPING=is_hopping || IS_HOPPING=no_hopping
   fi
 
-  # 检测是否安装其他 sing-box systemd 状态，和是否其他一键脚本
-  if [ -s /etc/systemd/system/sing-box.service ]; then
-    SYSTEMD_EXECSTART=$(grep '^ExecStart=' /etc/systemd/system/sing-box.service)
-    case "$SYSTEMD_EXECSTART" in
-      'ExecStart=/etc/sing-box/sing-box run -C /etc/sing-box/conf/' )
-        [ "$(systemctl is-active sing-box)" = 'active' ] && STATUS[0]=$(text 28) || STATUS[0]=$(text 27)
-        ;;
-      'ExecStart=/etc/v2ray-agent/sing-box/sing-box run -c /etc/v2ray-agent/sing-box/conf/config.json' )
-        SING_BOX_SCRIPT='mack-a/v2ray-agent' && error "\n $(text 99) \n"
-        ;;
-      'ExecStart=/etc/s-box/sing-box run -c /etc/s-box/sb.json' )
-        SING_BOX_SCRIPT='yonggekkk/sing-box_hysteria2_tuic_argo_reality' && error "\n $(text 99) \n"
-        ;;
-      'ExecStart=/usr/local/s-ui/bin/runSingbox.sh' )
-        SING_BOX_SCRIPT='alireza0/s-ui' && error "\n $(text 99) \n"
-        ;;
-      'ExecStart=/usr/local/bin/sing-box run -c /usr/local/etc/sing-box/config.json' )
-        SING_BOX_SCRIPT='FranzKafkaYu/sing-box-yes' && error "\n $(text 99) \n"
-        ;;
-      * )
-        SING_BOX_SCRIPT='Unknown or customized sing-box' && error "\n $(text 99) \n"
-    esac
-  elif [ -s /lib/systemd/system/sing-box.service ]; then
-    SYSTEMD_EXECSTART=$(grep '^ExecStart=' /lib/systemd/system/sing-box.service)
-    case "$SYSTEMD_EXECSTART" in
-      'ExecStart=/etc/sing-box/bin/sing-box run -c /etc/sing-box/config.json -C /etc/sing-box/conf' )
-        SING_BOX_SCRIPT='233boy/sing-box' && error "\n $(text 99) \n"
-        ;;
-      * )
-        SING_BOX_SCRIPT='Unknown or customized sing-box' && error "\n $(text 99) \n"
-    esac
+  if [ "$SYSTEM" = 'Alpine' ]; then
+    # Alpine 系统使用 OpenRC 检查服务
+    if [ -s /etc/init.d/sing-box ]; then
+      local OPENRC_EXECSTART=$(grep '^command=' /etc/init.d/sing-box)
+      case "$OPENRC_EXECSTART" in
+        *"${WORK_DIR}/sing-box"* )
+          if rc-service sing-box status &>/dev/null; then
+            STATUS[0]=$(text 28)
+          else
+            STATUS[0]=$(text 27)
+          fi
+          ;;
+        * )
+          SING_BOX_SCRIPT='Unknown or customized sing-box' && error "\n $(text 99) \n"
+      esac
+    else
+      STATUS[0]=$(text 26)
+    fi
   else
-    STATUS[0]=$(text 26)
+    # 非 Alpine 系统使用 systemd 检查服务
+    if [ -s /etc/systemd/system/sing-box.service ]; then
+      SYSTEMD_EXECSTART=$(grep '^ExecStart=' /etc/systemd/system/sing-box.service)
+      case "$SYSTEMD_EXECSTART" in
+        'ExecStart=/etc/sing-box/sing-box run -C /etc/sing-box/conf/' | 'ExecStart=/etc/sing-box/sing-box run -C /etc/sing-box/conf' )
+          [ "$(systemctl is-active sing-box)" = 'active' ] && STATUS[0]=$(text 28) || STATUS[0]=$(text 27)
+          ;;
+        'ExecStart=/etc/v2ray-agent/sing-box/sing-box run -c /etc/v2ray-agent/sing-box/conf/config.json' )
+          SING_BOX_SCRIPT='mack-a/v2ray-agent' && error "\n $(text 99) \n"
+          ;;
+        'ExecStart=/etc/s-box/sing-box run -c /etc/s-box/sb.json' )
+          SING_BOX_SCRIPT='yonggekkk/sing-box_hysteria2_tuic_argo_reality' && error "\n $(text 99) \n"
+          ;;
+        'ExecStart=/usr/local/s-ui/bin/runSingbox.sh' )
+          SING_BOX_SCRIPT='alireza0/s-ui' && error "\n $(text 99) \n"
+          ;;
+        'ExecStart=/usr/local/bin/sing-box run -c /usr/local/etc/sing-box/config.json' )
+          SING_BOX_SCRIPT='FranzKafkaYu/sing-box-yes' && error "\n $(text 99) \n"
+          ;;
+        * )
+          # 检查是否是自己的脚本安装的，但路径略有不同
+          if [[ "$SYSTEMD_EXECSTART" =~ "ExecStart=/etc/sing-box/sing-box run" ]]; then
+            [ "$(systemctl is-active sing-box)" = 'active' ] && STATUS[0]=$(text 28) || STATUS[0]=$(text 27)
+          else
+            SING_BOX_SCRIPT='Unknown or customized sing-box' && error "\n $(text 99) \n"
+          fi
+      esac
+    elif [ -s /lib/systemd/system/sing-box.service ]; then
+      SYSTEMD_EXECSTART=$(grep '^ExecStart=' /lib/systemd/system/sing-box.service)
+      case "$SYSTEMD_EXECSTART" in
+        'ExecStart=/etc/sing-box/bin/sing-box run -c /etc/sing-box/config.json -C /etc/sing-box/conf' )
+          SING_BOX_SCRIPT='233boy/sing-box' && error "\n $(text 99) \n"
+          ;;
+        * )
+          # 检查是否是自己的脚本安装的，但路径略有不同
+          if [[ "$SYSTEMD_EXECSTART" =~ "ExecStart=/etc/sing-box/sing-box run" ]]; then
+            [ "$(systemctl is-active sing-box)" = 'active' ] && STATUS[0]=$(text 28) || STATUS[0]=$(text 27)
+          else
+            SING_BOX_SCRIPT='Unknown or customized sing-box' && error "\n $(text 99) \n"
+          fi
+      esac
+    else
+      STATUS[0]=$(text 26)
+    fi
   fi
 
-  if [ "${STATUS[0]}" = "$(text 26)" ] && [ ! -s $WORK_DIR/sing-box ]; then
+  if [ "${STATUS[0]}" = "$(text 26)" ] && [ ! -s ${WORK_DIR}/sing-box ]; then
     {
-    local VERSION_LATEST=$(wget --no-check-certificate --tries=2 --timeout=3 -qO- ${GH_PROXY}https://api.github.com/repos/SagerNet/sing-box/releases | awk -F '["v-]' '/tag_name/{print $5}' | sort -Vr | sed -n '1p')
-    #####local ONLINE=$(wget --no-check-certificate --tries=2 --timeout=3 -qO- ${GH_PROXY}https://api.github.com/repos/SagerNet/sing-box/releases | awk -F '["v]' -v var="tag_name.*$VERSION_LATEST" '$0 ~ var {print $5; exit}')
-    ONLINE=${ONLINE:-'1.11.0-alpha.6'}
+    # FORCE_VERSION 用于在 sing-box 某个主程序出现 bug 时，强制为指定版本，以防止运行出错
+    local FORCE_VERSION=$(wget --no-check-certificate --tries=2 --timeout=3 -qO- ${GH_PROXY}https://raw.githubusercontent.com/fscarmen/sing-box/refs/heads/main/force_version | sed 's/^[vV]//g')
+    if grep -q '.' <<< "$FORCE_VERSION"; then
+      local ONLINE="$FORCE_VERSION"
+    else
+      local VERSION_LATEST=$(wget --no-check-certificate --tries=2 --timeout=3 -qO- ${GH_PROXY}https://api.github.com/repos/SagerNet/sing-box/releases | awk -F '["v-]' '/tag_name/{print $5}' | sort -Vr | sed -n '1p')
+      local ONLINE=$(wget --no-check-certificate --tries=2 --timeout=3 -qO- ${GH_PROXY}https://api.github.com/repos/SagerNet/sing-box/releases | awk -F '["v]' -v var="tag_name.*$VERSION_LATEST" '$0 ~ var {print $5; exit}')
+      ONLINE=${ONLINE:-'1.12.0'}
+    fi
     wget --no-check-certificate --continue ${GH_PROXY}https://github.com/SagerNet/sing-box/releases/download/v$ONLINE/sing-box-$ONLINE-linux-$SING_BOX_ARCH.tar.gz -qO- | tar xz -C $TEMP_DIR sing-box-$ONLINE-linux-$SING_BOX_ARCH/sing-box >/dev/null 2>&1
     [ -s $TEMP_DIR/sing-box-$ONLINE-linux-$SING_BOX_ARCH/sing-box ] && mv $TEMP_DIR/sing-box-$ONLINE-linux-$SING_BOX_ARCH/sing-box $TEMP_DIR
     wget --no-check-certificate --continue -qO $TEMP_DIR/jq ${GH_PROXY}https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-$JQ_ARCH >/dev/null 2>&1 && chmod +x $TEMP_DIR/jq >/dev/null 2>&1
@@ -528,81 +619,87 @@ check_install() {
   fi
 
   if [ "$NONINTERACTIVE_INSTALL" != 'noninteractive_install' ]; then
-    STATUS[1]=$(text 26) && IS_ARGO=no_argo && [ -s /etc/systemd/system/argo.service ] && IS_ARGO=is_argo && STATUS[1]=$(text 27) && [ "$(systemctl is-active argo)" = 'active' ] && STATUS[1]=$(text 28)
+    # 检查 Argo 服务状态
+    STATUS[1]=$(text 26) && IS_ARGO=no_argo
+    [[ -s /etc/systemd/system/argo.service || -s /etc/init.d/argo ]] && IS_ARGO=is_argo && STATUS[1]=$(text 27)
+    cmd_systemctl status argo &>/dev/null && STATUS[1]=$(text 28)
   fi
-  if [ -s /etc/systemd/system/argo.service ]; then
-    local ARGO_CONTENT=$(grep '^ExecStart' /etc/systemd/system/argo.service)
-    if grep -q '\--token' <<< "$ARGO_CONTENT"; then
-      ARGO_TYPE=is_token_argo
-    elif grep -q '\--config' <<< "$ARGO_CONTENT"; then
-      ARGO_TYPE=is_json_argo
-    elif grep -q '\--url' <<< "$ARGO_CONTENT"; then
-      ARGO_TYPE=is_quicktunnel_argo
+
+  # 检查 Argo 服务类型
+  if [ "$SYSTEM" = 'Alpine' ]; then
+    if [ -s /etc/init.d/argo ]; then
+      local ARGO_CONTENT=$(grep '^command_args=' /etc/init.d/argo)
+      if grep -q '\--token' <<< "$ARGO_CONTENT"; then
+        ARGO_TYPE=is_token_argo
+      elif grep -q '\--config' <<< "$ARGO_CONTENT"; then
+        ARGO_TYPE=is_json_argo
+      elif grep -q '\--url' <<< "$ARGO_CONTENT"; then
+        ARGO_TYPE=is_quicktunnel_argo
+      fi
+    fi
+  else
+    if [[ -s /etc/systemd/system/argo.service || -s /etc/init.d/argo ]]; then
+      local ARGO_CONTENT=$(grep '^ExecStart' /etc/systemd/system/argo.service)
+      if grep -q '\--token' <<< "$ARGO_CONTENT"; then
+        ARGO_TYPE=is_token_argo
+      elif grep -q '\--config' <<< "$ARGO_CONTENT"; then
+        ARGO_TYPE=is_json_argo
+      elif grep -q '\--url' <<< "$ARGO_CONTENT"; then
+        ARGO_TYPE=is_quicktunnel_argo
+      fi
     fi
   fi
-  [[ "${STATUS[1]}" = "$(text 26)" || "$NONINTERACTIVE_INSTALL" = 'noninteractive_install' ]] && [ ! -s $WORK_DIR/cloudflared ] && { wget --no-check-certificate -qO $TEMP_DIR/cloudflared ${GH_PROXY}https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-$ARGO_ARCH >/dev/null 2>&1 && chmod +x $TEMP_DIR/cloudflared >/dev/null 2>&1; }&
-}
 
-# 检测 sing-box 的状态
-check_sing-box_status() {
-  case "${STATUS[0]}" in
-    "$(text 26)" )
-      error "\n Sing-box $(text 28) $(text 38) \n"
-      ;;
-    "$(text 27)" )
-      cmd_systemctl enable sing-box
-      [ "$(systemctl is-active sing-box)" = 'active' ] && info "\n Sing-box $(text 28) $(text 37) \n" || error "\n Sing-box $(text 28) $(text 38) \n"
-      ;;
-    "$(text 28)" )
-      info "\n Sing-box $(text 28) $(text 37) \n"
-  esac
-}
-
-# 检测 Argo 的状态
-check_argo_status() {
-  case "${STATUS[1]}" in
-    "$(text 26)" )
-      error "\n Argo $(text 28) $(text 38) \n"
-      ;;
-    "$(text 27)" )
-      cmd_systemctl enable argo
-      [ "$(systemctl is-active argo)" = 'active' ] && info "\n Argo $(text 28) $(text 37) \n" || error "\n Argo $(text 28) $(text 38) \n"
-      ;;
-    "$(text 28)" )
-      info "\n Argo $(text 28) $(text 37) \n"
-  esac
+  # 下载 cloudflared 如果需要
+  [[ "${STATUS[1]}" = "$(text 26)" || "$NONINTERACTIVE_INSTALL" = 'noninteractive_install' ]] && [ ! -s ${WORK_DIR}/cloudflared ] && { wget --no-check-certificate -qO $TEMP_DIR/cloudflared ${GH_PROXY}https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-$ARGO_ARCH >/dev/null 2>&1 && chmod +x $TEMP_DIR/cloudflared >/dev/null 2>&1; }&
 }
 
 # 为了适配 alpine，定义 cmd_systemctl 的函数
 cmd_systemctl() {
-  local ENABLE_DISABLE=$1
-  local APP=$2
-  if [ "$ENABLE_DISABLE" = 'enable' ]; then
-    if [ "$SYSTEM" = 'Alpine' ]; then
-      systemctl start $APP
-      cat > /etc/local.d/$APP.start << EOF
-#!/usr/bin/env bash
-
-systemctl start $APP
-EOF
-      chmod +x /etc/local.d/$APP.start
-      rc-update add local >/dev/null 2>&1
-    elif [ "$IS_CENTOS" = 'CentOS7' ]; then
-      systemctl enable --now $APP
-      [ "$APP" = 'sing-box' ] && [[ "${IS_SUB}" = 'is_sub' || "${IS_ARGO}" = 'is_argo' ]] && $(type -p nginx) -c $WORK_DIR/nginx.conf
+  if [ "$SYSTEM" = 'Alpine' ]; then
+    case "$1" in
+      enable)
+        if [ "$2" = "sing-box" ]; then
+          rc-update add sing-box default >/dev/null 2>&1
+          rc-service sing-box start >/dev/null 2>&1
+        elif [ "$2" = "argo" ]; then
+          rc-update add argo default >/dev/null 2>&1
+          rc-service argo start >/dev/null 2>&1
+        fi
+        ;;
+      disable)
+        if [ "$2" = "sing-box" ]; then
+          rc-service sing-box stop >/dev/null 2>&1
+          rc-update del sing-box default >/dev/null 2>&1
+        elif [ "$2" = "argo" ]; then
+          rc-service argo stop >/dev/null 2>&1
+          rc-update del argo default >/dev/null 2>&1
+        fi
+        ;;
+      restart)
+        if [ "$2" = "sing-box" ]; then
+          rc-service sing-box restart >/dev/null 2>&1
+        elif [ "$2" = "argo" ]; then
+          rc-service argo restart >/dev/null 2>&1
+        fi
+        ;;
+      status)
+        if [ "$2" = "sing-box" ]; then
+          rc-service sing-box status
+        elif [ "$2" = "argo" ]; then
+          rc-service argo status
+        fi
+        ;;
+    esac
+  else
+    if [ "$1" = "enable" ] || [ "$1" = "disable" ]; then
+      systemctl "$1" --now "$2" >/dev/null 2>&1
+    elif [ "$1" = "restart" ]; then
+      systemctl restart "$2" >/dev/null 2>&1
+    elif [ "$1" = "status" ]; then
+      systemctl status "$2"
     else
-      systemctl enable --now $APP
-    fi
-  elif [ "$ENABLE_DISABLE" = 'disable' ]; then
-    if [ "$SYSTEM" = 'Alpine' ]; then
-      systemctl stop $APP
-      [ "$APP" = 'sing-box' ] && [[ "${IS_SUB}" = 'is_sub' || "${IS_ARGO}" = 'is_argo' ]] && [ -s $WORK_DIR/nginx.conf ] && ss -nltp | grep $(awk '/listen/{print $2; exit}' $WORK_DIR/nginx.conf) | tr ',' '\n' | awk -F '=' '/pid/{print $2}' | sort -u | xargs kill -15 >/dev/null 2>&1
-      rm -f /etc/local.d/$APP.start
-    elif [ "$IS_CENTOS" = 'CentOS7' ]; then
-      systemctl disable --now $APP
-      [ "$APP" = 'sing-box' ] && [[ "${IS_SUB}" = 'is_sub' || "${IS_ARGO}" = 'is_argo' ]] && [ -s $WORK_DIR/nginx.conf ] && ss -nltp | grep $(awk '/listen/{print $2; exit}' $WORK_DIR/nginx.conf) | tr ',' '\n' | awk -F '=' '/pid/{print $2}' | sort -u | xargs kill -15 >/dev/null 2>&1
-    else
-      systemctl disable --now $APP
+      systemctl "$@" >/dev/null 2>&1
     fi
   fi
 }
@@ -716,7 +813,7 @@ add_port_hopping_nat() {
 
 # 查端口跳跃的 dnat 端口
 check_port_hopping_nat() {
-  PORT_HOPPING_TARGET=$(awk -F [:,] '/"listen_port"/{print $2}' $WORK_DIR/conf/*${NODE_TAG[1]}_inbounds.json)
+  PORT_HOPPING_TARGET=$(awk -F [:,] '/"listen_port"/{print $2}' ${WORK_DIR}/conf/*${NODE_TAG[1]}_inbounds.json)
   if [ "$SYSTEM" = 'Alpine' ]; then
     local IPTABLES_PREROUTING_LIST=$(iptables --table nat --list-rules PREROUTING 2>/dev/null | grep 'Sing-box Family Bucket')
     [ -n "$IPTABLES_PREROUTING_LIST" ] && PORT_HOPPING_RANGE=$(awk '{for (i=0; i<NF; i++) if ($i=="--dport") {print $(i+1); exit}}' <<< "$IPTABLES_PREROUTING_LIST") && PORT_HOPPING_TARGET=$(awk '{for (i=0; i<NF; i++) if ($i=="to") {print $(i+1); exit}}' <<< "$IPTABLES_PREROUTING_LIST")
@@ -799,10 +896,6 @@ sing-box_variables() {
     SERVER_IP_DEFAULT=$WAN6
   fi
 
-  # 检测是否解锁 chatGPT
-  CHAT_GPT_OUT_V4=warp-IPv4-out; CHAT_GPT_OUT_V6=warp-IPv6-out;
-  [ "$(check_chatgpt ${DOMAIN_STRATEG: -1})" = 'unlock' ] && CHAT_GPT_OUT_V4=direct && CHAT_GPT_OUT_V6=direct
-
   # 选择安装的协议，由于选项 a 为全部协议，所以选项数不是从 a 开始，而是从 b 开始，处理输入：把大写全部变为小写，把不符合的选项去掉，把重复的选项合并
   MAX_CHOOSE_PROTOCOLS=$(asc $[CONSECUTIVE_PORTS+96+1])
   if [ -z "$CHOOSE_PROTOCOLS" ]; then
@@ -835,12 +928,14 @@ sing-box_variables() {
 
   # 根据服务 IP，使用不同的 warp 配置
   if [[ "$SERVER_IP" =~ : ]]; then
-    WARP_ENDPOINT=2606:4700:d0::a29f:c101
-    DOMAIN_STRATEG=prefer_ipv6
+    STRATEGY=prefer_ipv6
   else
-    WARP_ENDPOINT=162.159.193.10
-    DOMAIN_STRATEG=prefer_ipv4
+    STRATEGY=ipv4_only
   fi
+
+  # 检测是否解锁 chatGPT
+  CHATGPT_OUT=warp-ep;
+  [ "$(check_chatgpt $(grep -oE '[46]' <<< "$STRATEGY"))" = 'unlock' ] && CHATGPT_OUT=direct
 
   # 如选择有 c. hysteria2 时，选择是否使用端口跳跃
   [[ "${INSTALL_PROTOCOLS[@]}" =~ 'c' ]] && input_hopping_port
@@ -904,8 +999,8 @@ check_dependencies() {
   if [ "$SYSTEM" = 'Alpine' ]; then
     local CHECK_WGET=$(wget 2>&1 | head -n 1)
     grep -qi 'busybox' <<< "$CHECK_WGET" && ${PACKAGE_INSTALL[int]} wget >/dev/null 2>&1
-    local DEPS_CHECK=("bash" "rc-update" "virt-what" "python3" "iptables" "ip6tables")
-    local DEPS_INSTALL=("bash" "openrc" "virt-what" "python3" "iptables" "ip6tables")
+    local DEPS_CHECK=("bash" "rc-update" "virt-what" "iptables" "ip6tables")
+    local DEPS_INSTALL=("bash" "openrc" "virt-what" "iptables" "ip6tables")
     for g in "${!DEPS_CHECK[@]}"; do
       [ ! -x "$(type -p ${DEPS_CHECK[g]})" ] && DEPS_ALPINE+=(${DEPS_INSTALL[g]})
     done
@@ -915,13 +1010,12 @@ check_dependencies() {
       ${PACKAGE_INSTALL[int]} ${DEPS_ALPINE[@]} >/dev/null 2>&1
       [[ -z "$VIRT" && "${DEPS_ALPINE[@]}" =~ 'virt-what' ]] && VIRT=$(virt-what | tr '\n' ' ')
     fi
-
-    [ ! -x "$(type -p systemctl)" ] && wget --no-check-certificate --quiet ${GH_PROXY}https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/master/files/docker/systemctl3.py -O /bin/systemctl && chmod a+x /bin/systemctl
   fi
 
   # 检测 Linux 系统的依赖，升级库并重新安装依赖
-  local DEPS_CHECK=("wget" "tar" "systemctl" "ss" "bash" "openssl")
-  local DEPS_INSTALL=("wget" "tar" "systemctl" "iproute2" "bash" "openssl")
+  local DEPS_CHECK=("wget" "tar" "ss" "bash" "openssl")
+  local DEPS_INSTALL=("wget" "tar" "iproute2" "bash" "openssl")
+  [ "$SYSTEM" != 'Alpine' ] && DEPS_CHECK+=("systemctl") && DEPS_INSTALL+=("systemctl")
   for g in "${!DEPS_CHECK[@]}"; do
     [ ! -x "$(type -p ${DEPS_CHECK[g]})" ] && DEPS+=(${DEPS_INSTALL[g]})
   done
@@ -949,6 +1043,14 @@ check_dependencies() {
   else
     info "\n $(text 8) \n"
   fi
+
+  # 对于 Alpine 系统，确保 OpenRC 服务已启动
+  if [ "$SYSTEM" = 'Alpine' ]; then
+    if ! rc-service --list | grep -q "^openrc"; then
+      rc-update add openrc boot >/dev/null 2>&1
+      rc-service openrc start >/dev/null 2>&1
+    fi
+  fi
 }
 
 # 检查并安装 nginx
@@ -957,19 +1059,20 @@ check_nginx() {
     info "\n $(text 7) nginx \n"
     ${PACKAGE_UPDATE[int]} >/dev/null 2>&1
     ${PACKAGE_INSTALL[int]} nginx >/dev/null 2>&1
-    # 如果新安装的 Nginx ，先停掉服务
-    systemctl disable --now nginx >/dev/null 2>&1
+
+    # 如果新安装的 Nginx，使用 cmd_systemctl 停止服务
+    cmd_systemctl disable nginx
   fi
 }
 
 # Json 生成两个配置文件
 export_argo_json_file() {
   local FILE_PATH=$1
-  [[ -z "$PORT_NGINX" && -s $WORK_DIR/nginx.conf ]] && local PORT_NGINX=$(awk '/listen/{print $2; exit}' $WORK_DIR/nginx.conf)
+  [[ -z "$PORT_NGINX" && -s ${WORK_DIR}/nginx.conf ]] && local PORT_NGINX=$(awk '/listen/{print $2; exit}' ${WORK_DIR}/nginx.conf)
   [ ! -s $FILE_PATH/tunnel.json ] && echo $ARGO_JSON > $FILE_PATH/tunnel.json
   [ ! -s $FILE_PATH/tunnel.yml ] && cat > $FILE_PATH/tunnel.yml << EOF
 tunnel: $(awk -F '"' '{print $12}' <<< "$ARGO_JSON")
-credentials-file: $WORK_DIR/tunnel.json
+credentials-file: ${WORK_DIR}/tunnel.json
 
 ingress:
   - hostname: ${ARGO_DOMAIN}
@@ -980,8 +1083,8 @@ EOF
 
 # 生成100年的自签证书
 ssl_certificate() {
-  mkdir -p $WORK_DIR/cert
-  openssl ecparam -genkey -name prime256v1 -out $WORK_DIR/cert/private.key && openssl req -new -x509 -days 36500 -key $WORK_DIR/cert/private.key -out $WORK_DIR/cert/cert.pem -subj "/CN=$(awk -F . '{print $(NF-1)"."$NF}' <<< "$TLS_SERVER_DEFAULT")"
+  mkdir -p ${WORK_DIR}/cert
+  openssl ecparam -genkey -name prime256v1 -out ${WORK_DIR}/cert/private.key && openssl req -new -x509 -days 36500 -key ${WORK_DIR}/cert/private.key -out ${WORK_DIR}/cert/cert.pem -subj "/CN=$(awk -F . '{print $(NF-1)"."$NF}' <<< "$TLS_SERVER_DEFAULT")"
 }
 
 # 处理防火墙规则
@@ -1061,8 +1164,8 @@ http {
 #    listen $PORT_NGINX ssl http2 ;  # https
     server_name localhost;
 
-#    ssl_certificate            $WORK_DIR/cert/cert.pem;
-#    ssl_certificate_key        $WORK_DIR/cert/private.key;
+#    ssl_certificate            ${WORK_DIR}/cert/cert.pem;
+#    ssl_certificate_key        ${WORK_DIR}/cert/private.key;
 #    ssl_protocols              TLSv1.3;
 #    ssl_session_tickets        on;
 #    ssl_stapling               off;
@@ -1128,82 +1231,81 @@ http {
   NGINX_CONF+="  }
 }"
 
-  echo "$NGINX_CONF" > $WORK_DIR/nginx.conf
+  echo "$NGINX_CONF" > ${WORK_DIR}/nginx.conf
 }
 
 # 生成 sing-box 配置文件
 sing-box_json() {
   local IS_CHANGE=$1
-  mkdir -p $WORK_DIR/conf $WORK_DIR/logs $WORK_DIR/subscribe
+  mkdir -p ${WORK_DIR}/conf ${WORK_DIR}/logs ${WORK_DIR}/subscribe
 
   # 判断是否为新安装，不为 change 就是新安装
   if [ "$IS_CHANGE" = 'change' ]; then
     # 判断 sing-box 主程序所在路径
-    DIR=$WORK_DIR
+    DIR=${WORK_DIR}
   else
     DIR=$TEMP_DIR
 
-    # 生成 dns 配置
-    cat > $WORK_DIR/conf/00_log.json << EOF
+    # 生成 log 配置
+    cat > ${WORK_DIR}/conf/00_log.json << EOF
 {
     "log":{
         "disabled":false,
         "level":"error",
-        "output":"$WORK_DIR/logs/box.log",
+        "output":"${WORK_DIR}/logs/box.log",
         "timestamp":true
     }
 }
 EOF
 
     # 生成 outbound 配置
-    cat > $WORK_DIR/conf/01_outbounds.json << EOF
+    cat > ${WORK_DIR}/conf/01_outbounds.json << EOF
 {
     "outbounds":[
         {
             "type":"direct",
-            "tag":"direct",
-            "domain_strategy":"$DOMAIN_STRATEG"
-        },
-        {
-            "type":"direct",
-            "tag":"warp-IPv4-out",
-            "detour":"wireguard-out",
-            "domain_strategy":"ipv4_only"
-        },
-        {
-            "type":"direct",
-            "tag":"warp-IPv6-out",
-            "detour":"wireguard-out",
-            "domain_strategy":"ipv6_only"
-        },
+            "tag":"direct"
+        }
+    ]
+}
+EOF
+
+    # 生成 endpoint 配置
+    cat > ${WORK_DIR}/conf/02_endpoints.json << EOF
+{
+    "endpoints":[
         {
             "type":"wireguard",
-            "tag":"wireguard-out",
-            "server":"${WARP_ENDPOINT}",
-            "server_port":2408,
-            "local_address":[
+            "tag":"warp-ep",
+            "mtu":1280,
+            "address":[
                 "172.16.0.2/32",
                 "2606:4700:110:8a36:df92:102a:9602:fa18/128"
             ],
             "private_key":"YFYOAdbw1bKTHlNNi+aEjBM3BO7unuFC5rOkMRAz9XY=",
-            "peer_public_key":"bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
-            "reserved":[
-                78,
-                135,
-                76
-            ],
-            "mtu":1280
-        },
-        {
-            "type":"block",
-            "tag":"block"
+            "peers": [
+              {
+                "address": "engage.cloudflareclient.com",
+                "port":2408,
+                "public_key":"bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
+                "allowed_ips": [
+                  "0.0.0.0/0",
+                  "::/0"
+                ],
+                "reserved":[
+                    78,
+                    135,
+                    76
+                ]
+              }
+            ]
         }
     ]
 }
 EOF
 
     # 生成 route 配置
-    cat > $WORK_DIR/conf/02_route.json << EOF
+    cat > ${WORK_DIR}/conf/03_route.json << EOF
 {
     "route":{
         "rule_set":[
@@ -1216,12 +1318,30 @@ EOF
         ],
         "rules":[
             {
-                "domain":"api.openai.com",
-                "outbound":"$CHAT_GPT_OUT_V4"
+                "action": "sniff"
             },
             {
-                "rule_set":"geosite-openai",
-                "outbound":"$CHAT_GPT_OUT_V6"
+                "action": "resolve",
+                "domain":[
+                    "api.openai.com"
+                ],
+                "strategy": "prefer_ipv4"
+            },
+            {
+                "action": "resolve",
+                "rule_set":[
+                    "geosite-openai"
+                ],
+                "strategy": "prefer_ipv6"
+            },
+            {
+                "domain":[
+                    "api.openai.com"
+                ],
+                "rule_set":[
+                    "geosite-openai"
+                ],
+                "outbound":"${CHATGPT_OUT}"
             }
         ]
     }
@@ -1229,26 +1349,39 @@ EOF
 EOF
 
     # 生成缓存文件
-    cat > $WORK_DIR/conf/03_experimental.json << EOF
+    cat > ${WORK_DIR}/conf/04_experimental.json << EOF
 {
     "experimental": {
         "cache_file": {
             "enabled": true,
-            "path": "$WORK_DIR/cache.db"
+            "path": "${WORK_DIR}/cache.db"
         }
     }
 }
 EOF
 
     # 生成 dns 配置文件
-    cat > $WORK_DIR/conf/04_dns.json << EOF
+    cat > ${WORK_DIR}/conf/05_dns.json << EOF
 {
     "dns":{
         "servers":[
             {
-                "address":"local"
+                "type":"local"
             }
-        ]
+        ],
+        "strategy": "${STRATEGY}"
+    }
+}
+EOF
+
+    # 内建的 NTP 客户端服务配置文件，这对于无法进行时间同步的环境很有用
+    cat > ${WORK_DIR}/conf/06_ntp.json << EOF
+{
+    "ntp": {
+        "enabled": true,
+        "server": "time.apple.com",
+        "server_port": 123,
+        "interval": "60m"
     }
 }
 EOF
@@ -1269,14 +1402,12 @@ EOF
   if [[ "${INSTALL_PROTOCOLS[@]}" =~ "$CHECK_PROTOCOLS" ]]; then
     [ -z "$PORT_XTLS_REALITY" ] && PORT_XTLS_REALITY=$[START_PORT+$(awk -v target=$CHECK_PROTOCOLS '{ for(i=1; i<=NF; i++) if($i == target) { print i-1; break } }' <<< "${INSTALL_PROTOCOLS[*]}")]
     NODE_NAME[11]=${NODE_NAME[11]:-"$NODE_NAME_CONFIRM"} && UUID[11]=${UUID[11]:-"$UUID_CONFIRM"} && TLS_SERVER[11]=${TLS_SERVER[11]:-"$TLS_SERVER"} && REALITY_PRIVATE[11]=${REALITY_PRIVATE[11]:-"$REALITY_PRIVATE"} && REALITY_PUBLIC[11]=${REALITY_PUBLIC[11]:-"$REALITY_PUBLIC"}
-    cat > $WORK_DIR/conf/11_${NODE_TAG[0]}_inbounds.json << EOF
+    cat > ${WORK_DIR}/conf/11_${NODE_TAG[0]}_inbounds.json << EOF
 //  "public_key":"${REALITY_PUBLIC[11]}"
 {
     "inbounds":[
         {
             "type":"vless",
-            "sniff":true,
-            "sniff_override_destination":true,
             "tag":"${NODE_NAME[11]} ${NODE_TAG[0]}",
             "listen":"::",
             "listen_port":$PORT_XTLS_REALITY,
@@ -1322,13 +1453,11 @@ EOF
     [ -z "$PORT_HYSTERIA2" ] && PORT_HYSTERIA2=$[START_PORT+$(awk -v target=$CHECK_PROTOCOLS '{ for(i=1; i<=NF; i++) if($i == target) { print i-1; break } }' <<< "${INSTALL_PROTOCOLS[*]}")]
     [ "$IS_HOPPING" = 'is_hopping' ] && add_port_hopping_nat $PORT_HOPPING_START $PORT_HOPPING_END $PORT_HYSTERIA2
     NODE_NAME[12]=${NODE_NAME[12]:-"$NODE_NAME_CONFIRM"} && UUID[12]=${UUID[12]:-"$UUID_CONFIRM"}
-    cat > $WORK_DIR/conf/12_${NODE_TAG[1]}_inbounds.json << EOF
+    cat > ${WORK_DIR}/conf/12_${NODE_TAG[1]}_inbounds.json << EOF
 {
     "inbounds":[
         {
             "type":"hysteria2",
-            "sniff":true,
-            "sniff_override_destination":true,
             "tag":"${NODE_NAME[12]} ${NODE_TAG[1]}",
             "listen":"::",
             "listen_port":$PORT_HYSTERIA2,
@@ -1346,8 +1475,8 @@ EOF
                 ],
                 "min_version":"1.3",
                 "max_version":"1.3",
-                "certificate_path":"$WORK_DIR/cert/cert.pem",
-                "key_path":"$WORK_DIR/cert/private.key"
+                "certificate_path":"${WORK_DIR}/cert/cert.pem",
+                "key_path":"${WORK_DIR}/cert/private.key"
             }
         }
     ]
@@ -1360,13 +1489,11 @@ EOF
   if [[ "${INSTALL_PROTOCOLS[@]}" =~ "$CHECK_PROTOCOLS" ]]; then
     [ -z "$PORT_TUIC" ] && PORT_TUIC=$[START_PORT+$(awk -v target=$CHECK_PROTOCOLS '{ for(i=1; i<=NF; i++) if($i == target) { print i-1; break } }' <<< "${INSTALL_PROTOCOLS[*]}")]
     NODE_NAME[13]=${NODE_NAME[13]:-"$NODE_NAME_CONFIRM"} && UUID[13]=${UUID[13]:-"$UUID_CONFIRM"} && TUIC_PASSWORD=${TUIC_PASSWORD:-"$UUID_CONFIRM"} && TUIC_CONGESTION_CONTROL=${TUIC_CONGESTION_CONTROL:-"bbr"}
-    cat > $WORK_DIR/conf/13_${NODE_TAG[2]}_inbounds.json << EOF
+    cat > ${WORK_DIR}/conf/13_${NODE_TAG[2]}_inbounds.json << EOF
 {
     "inbounds":[
         {
             "type":"tuic",
-            "sniff":true,
-            "sniff_override_destination":true,
             "tag":"${NODE_NAME[13]} ${NODE_TAG[2]}",
             "listen":"::",
             "listen_port":$PORT_TUIC,
@@ -1383,8 +1510,8 @@ EOF
                 "alpn":[
                     "h3"
                 ],
-                "certificate_path":"$WORK_DIR/cert/cert.pem",
-                "key_path":"$WORK_DIR/cert/private.key"
+                "certificate_path":"${WORK_DIR}/cert/cert.pem",
+                "key_path":"${WORK_DIR}/cert/private.key"
             }
         }
     ]
@@ -1398,13 +1525,11 @@ EOF
     [ -z "$PORT_SHADOWTLS" ] && PORT_SHADOWTLS=$[START_PORT+$(awk -v target=$CHECK_PROTOCOLS '{ for(i=1; i<=NF; i++) if($i == target) { print i-1; break } }' <<< "${INSTALL_PROTOCOLS[*]}")]
     NODE_NAME[14]=${NODE_NAME[14]:-"$NODE_NAME_CONFIRM"} && UUID[14]=${UUID[14]:-"$UUID_CONFIRM"} && TLS_SERVER[14]=${TLS_SERVER[14]:-"$TLS_SERVER"} && SHADOWTLS_PASSWORD=${SHADOWTLS_PASSWORD:-"$($DIR/sing-box generate rand --base64 16)"} && SHADOWTLS_METHOD=${SHADOWTLS_METHOD:-"2022-blake3-aes-128-gcm"}
 
-    cat > $WORK_DIR/conf/14_${NODE_TAG[3]}_inbounds.json << EOF
+    cat > ${WORK_DIR}/conf/14_${NODE_TAG[3]}_inbounds.json << EOF
 {
     "inbounds":[
         {
             "type":"shadowtls",
-            "sniff":true,
-            "sniff_override_destination":true,
             "tag":"${NODE_NAME[14]} ${NODE_TAG[3]}",
             "listen":"::",
             "listen_port":$PORT_SHADOWTLS,
@@ -1448,13 +1573,11 @@ EOF
   if [[ "${INSTALL_PROTOCOLS[@]}" =~ "$CHECK_PROTOCOLS" ]]; then
     [ -z "$PORT_SHADOWSOCKS" ] && PORT_SHADOWSOCKS=$[START_PORT+$(awk -v target=$CHECK_PROTOCOLS '{ for(i=1; i<=NF; i++) if($i == target) { print i-1; break } }' <<< "${INSTALL_PROTOCOLS[*]}")]
     NODE_NAME[15]=${NODE_NAME[15]:-"$NODE_NAME_CONFIRM"} && UUID[15]=${UUID[15]:-"$UUID_CONFIRM"} && SHADOWSOCKS_METHOD=${SHADOWSOCKS_METHOD:-"aes-128-gcm"}
-    cat > $WORK_DIR/conf/15_${NODE_TAG[4]}_inbounds.json << EOF
+    cat > ${WORK_DIR}/conf/15_${NODE_TAG[4]}_inbounds.json << EOF
 {
     "inbounds":[
         {
             "type":"shadowsocks",
-            "sniff":true,
-            "sniff_override_destination":true,
             "tag":"${NODE_NAME[15]} ${NODE_TAG[4]}",
             "listen":"::",
             "listen_port":$PORT_SHADOWSOCKS,
@@ -1480,13 +1603,11 @@ EOF
   if [[ "${INSTALL_PROTOCOLS[@]}" =~ "$CHECK_PROTOCOLS" ]]; then
     [ -z "$PORT_TROJAN" ] && PORT_TROJAN=$[START_PORT+$(awk -v target=$CHECK_PROTOCOLS '{ for(i=1; i<=NF; i++) if($i == target) { print i-1; break } }' <<< "${INSTALL_PROTOCOLS[*]}")]
     NODE_NAME[16]=${NODE_NAME[16]:-"$NODE_NAME_CONFIRM"} && TROJAN_PASSWORD=${TROJAN_PASSWORD:-"$UUID_CONFIRM"}
-    cat > $WORK_DIR/conf/16_${NODE_TAG[5]}_inbounds.json << EOF
+    cat > ${WORK_DIR}/conf/16_${NODE_TAG[5]}_inbounds.json << EOF
 {
     "inbounds":[
         {
             "type":"trojan",
-            "sniff":true,
-            "sniff_override_destination":true,
             "tag":"${NODE_NAME[16]} ${NODE_TAG[5]}",
             "listen":"::",
             "listen_port":$PORT_TROJAN,
@@ -1497,8 +1618,8 @@ EOF
             ],
             "tls":{
                 "enabled":true,
-                "certificate_path":"$WORK_DIR/cert/cert.pem",
-                "key_path":"$WORK_DIR/cert/private.key"
+                "certificate_path":"${WORK_DIR}/cert/cert.pem",
+                "key_path":"${WORK_DIR}/cert/private.key"
             },
             "multiplex":{
                 "enabled":true,
@@ -1520,7 +1641,7 @@ EOF
   if [[ "${INSTALL_PROTOCOLS[@]}" =~ "$CHECK_PROTOCOLS" ]]; then
     [ -z "$PORT_VMESS_WS" ] && PORT_VMESS_WS=$[START_PORT+$(awk -v target=$CHECK_PROTOCOLS '{ for(i=1; i<=NF; i++) if($i == target) { print i-1; break } }' <<< "${INSTALL_PROTOCOLS[*]}")]
     NODE_NAME[17]=${NODE_NAME[17]:-"$NODE_NAME_CONFIRM"} && UUID[17]=${UUID[17]:-"$UUID_CONFIRM"} && WS_SERVER_IP[17]=${WS_SERVER_IP[17]:-"$SERVER_IP"} && CDN[17]=${CDN[17]:-"$CDN"} && VMESS_WS_PATH=${VMESS_WS_PATH:-"${UUID[17]}-vmess"}
-    cat > $WORK_DIR/conf/17_${NODE_TAG[6]}_inbounds.json << EOF
+    cat > ${WORK_DIR}/conf/17_${NODE_TAG[6]}_inbounds.json << EOF
 //  "WS_SERVER_IP_SHOW": "${WS_SERVER_IP[17]}"
 //  "VMESS_HOST_DOMAIN": "${VMESS_HOST_DOMAIN}${ARGO_DOMAIN}"
 //  "CDN": "${CDN[17]}"
@@ -1528,8 +1649,6 @@ EOF
     "inbounds":[
         {
             "type":"vmess",
-            "sniff":true,
-            "sniff_override_destination":true,
             "tag":"${NODE_NAME[17]} ${NODE_TAG[6]}",
             "listen":"::",
             "listen_port":$PORT_VMESS_WS,
@@ -1567,15 +1686,13 @@ EOF
   if [[ "${INSTALL_PROTOCOLS[@]}" =~ "$CHECK_PROTOCOLS" ]]; then
     [ -z "$PORT_VLESS_WS" ] && PORT_VLESS_WS=$[START_PORT+$(awk -v target=$CHECK_PROTOCOLS '{ for(i=1; i<=NF; i++) if($i == target) { print i-1; break } }' <<< "${INSTALL_PROTOCOLS[*]}")]
     NODE_NAME[18]=${NODE_NAME[18]:-"$NODE_NAME_CONFIRM"} && UUID[18]=${UUID[18]:-"$UUID_CONFIRM"} && WS_SERVER_IP[18]=${WS_SERVER_IP[18]:-"$SERVER_IP"} && CDN[18]=${CDN[18]:-"$CDN"} && VLESS_WS_PATH=${VLESS_WS_PATH:-"${UUID[18]}-vless"}
-    cat > $WORK_DIR/conf/18_${NODE_TAG[7]}_inbounds.json << EOF
+    cat > ${WORK_DIR}/conf/18_${NODE_TAG[7]}_inbounds.json << EOF
 //  "WS_SERVER_IP_SHOW": "${WS_SERVER_IP[18]}"
 //  "CDN": "${CDN[18]}"
 {
     "inbounds":[
         {
             "type":"vless",
-            "sniff_override_destination":true,
-            "sniff":true,
             "tag":"${NODE_NAME[18]} ${NODE_TAG[7]}",
             "listen":"::",
             "listen_port":$PORT_VLESS_WS,
@@ -1621,14 +1738,12 @@ EOF
   if [[ "${INSTALL_PROTOCOLS[@]}" =~ "$CHECK_PROTOCOLS" ]]; then
     [ -z "$PORT_H2_REALITY" ] && PORT_H2_REALITY=$[START_PORT+$(awk -v target=$CHECK_PROTOCOLS '{ for(i=1; i<=NF; i++) if($i == target) { print i-1; break } }' <<< "${INSTALL_PROTOCOLS[*]}")]
     NODE_NAME[19]=${NODE_NAME[19]:-"$NODE_NAME_CONFIRM"} && UUID[19]=${UUID[19]:-"$UUID_CONFIRM"} && TLS_SERVER[19]=${TLS_SERVER[19]:-"$TLS_SERVER"} && REALITY_PRIVATE[19]=${REALITY_PRIVATE[19]:-"$REALITY_PRIVATE"} && REALITY_PUBLIC[19]=${REALITY_PUBLIC[19]:-"$REALITY_PUBLIC"}
-    cat > $WORK_DIR/conf/19_${NODE_TAG[8]}_inbounds.json << EOF
+    cat > ${WORK_DIR}/conf/19_${NODE_TAG[8]}_inbounds.json << EOF
 //  "public_key":"${REALITY_PUBLIC[19]}"
 {
     "inbounds":[
         {
             "type":"vless",
-            "sniff":true,
-            "sniff_override_destination":true,
             "tag":"${NODE_NAME[19]} ${NODE_TAG[8]}",
             "listen":"::",
             "listen_port":$PORT_H2_REALITY,
@@ -1652,7 +1767,7 @@ EOF
                     ]
                 }
             },
-            "transport": {
+            "transport":{
                 "type": "http"
             },
             "multiplex":{
@@ -1675,14 +1790,12 @@ EOF
   if [[ "${INSTALL_PROTOCOLS[@]}" =~ "$CHECK_PROTOCOLS" ]]; then
     [ -z "$PORT_GRPC_REALITY" ] && PORT_GRPC_REALITY=$[START_PORT+$(awk -v target=$CHECK_PROTOCOLS '{ for(i=1; i<=NF; i++) if($i == target) { print i-1; break } }' <<< "${INSTALL_PROTOCOLS[*]}")]
     NODE_NAME[20]=${NODE_NAME[20]:-"$NODE_NAME_CONFIRM"} && UUID[20]=${UUID[20]:-"$UUID_CONFIRM"} && TLS_SERVER[20]=${TLS_SERVER[20]:-"$TLS_SERVER"} && REALITY_PRIVATE[20]=${REALITY_PRIVATE[20]:-"$REALITY_PRIVATE"} && REALITY_PUBLIC[20]=${REALITY_PUBLIC[20]:-"$REALITY_PUBLIC"}
-    cat > $WORK_DIR/conf/20_${NODE_TAG[9]}_inbounds.json << EOF
+    cat > ${WORK_DIR}/conf/20_${NODE_TAG[9]}_inbounds.json << EOF
 //  "public_key":"${REALITY_PUBLIC[20]}"
 {
     "inbounds":[
         {
             "type":"vless",
-            "sniff":true,
-            "sniff_override_destination":true,
             "tag":"${NODE_NAME[20]} ${NODE_TAG[9]}",
             "listen":"::",
             "listen_port":$PORT_GRPC_REALITY,
@@ -1706,7 +1819,7 @@ EOF
                     ]
                 }
             },
-            "transport": {
+            "transport":{
                 "type": "grpc",
                 "service_name": "grpc"
             },
@@ -1724,11 +1837,99 @@ EOF
 }
 EOF
   fi
+
+  # 生成 anytls 配置
+  CHECK_PROTOCOLS=$(asc "$CHECK_PROTOCOLS" ++)
+  if [[ "${INSTALL_PROTOCOLS[@]}" =~ "$CHECK_PROTOCOLS" ]]; then
+    [ -z "$PORT_ANYTLS" ] && PORT_ANYTLS=$[START_PORT+$(awk -v target=$CHECK_PROTOCOLS '{ for(i=1; i<=NF; i++) if($i == target) { print i-1; break } }' <<< "${INSTALL_PROTOCOLS[*]}")]
+    NODE_NAME[21]=${NODE_NAME[21]:-"$NODE_NAME_CONFIRM"} && UUID[21]=${UUID[21]:-"$UUID_CONFIRM"}
+
+    cat > ${WORK_DIR}/conf/21_${NODE_TAG[10]}_inbounds.json << EOF
+{
+    "inbounds":[
+        {
+            "type":"anytls",
+            "tag":"${NODE_NAME[21]} anytls",
+            "listen":"::",
+            "listen_port":$PORT_ANYTLS,
+            "users":[
+                {
+                    "password":"${UUID[21]}"
+                }
+            ],
+            "padding_scheme":[],
+            "tls":{
+                "enabled":true,
+                "certificate_path":"${WORK_DIR}/cert/cert.pem",
+                "key_path":"${WORK_DIR}/cert/private.key"
+            }
+        }
+    ]
+}
+EOF
+  fi
 }
 
 # Sing-box 生成守护进程文件
 sing-box_systemd() {
-  SING_BOX_SERVICE="[Unit]
+  if [ "$SYSTEM" = 'Alpine' ]; then
+    local OPENRC_SERVICE="#!/sbin/openrc-run
+
+name=\"sing-box\"
+description=\"sing-box service\"
+command=\"${WORK_DIR}/sing-box\"
+command_args=\"run -C ${WORK_DIR}/conf\"
+pidfile=\"/var/run/\${RC_SVCNAME}.pid\"
+command_background=\"yes\"
+output_log=\"${WORK_DIR}/logs/sing-box.log\"
+error_log=\"${WORK_DIR}/logs/sing-box.log\"
+
+depend() {
+    need net
+    after net"
+
+    # 如果配置了 Nginx，添加依赖
+    [ -n "$PORT_NGINX" ] && OPENRC_SERVICE+="
+    need nginx"
+
+    # 添加 start_pre 函数，确保目录存在并设置正确权限
+    OPENRC_SERVICE+="
+}
+
+start_pre() {
+    # 确保日志目录和PID目录存在并有正确权限
+    mkdir -p ${WORK_DIR}/logs
+    mkdir -p /var/run
+    chmod 755 /var/run"
+
+    # 如果配置了 Nginx，启动 Nginx
+    [ -n "$PORT_NGINX" ] && OPENRC_SERVICE+="
+    $(type -p nginx) -c ${WORK_DIR}/nginx.conf"
+
+    OPENRC_SERVICE+="
+    # 确保 PID 文件不存在，避免启动失败
+    rm -f \$pidfile
+}"
+
+    # 添加 stop_post 函数，用于在服务停止后清理 nginx 进程
+    [ -n "$PORT_NGINX" ] && OPENRC_SERVICE+="
+
+stop_post() {
+    # 查找并停止由 sing-box 启动的 nginx 进程
+    # 使用 grep 查找包含特定配置文件的 nginx 进程
+    local NGINX_PIDS=\$(ps -ef | grep \"[n]ginx -c ${WORK_DIR}/nginx.conf\" | awk '{print \$1}')
+    if [ -n \"\$NGINX_PIDS\" ]; then
+        for pid in \$NGINX_PIDS; do
+            kill \$pid 2>/dev/null
+        done
+    fi
+}"
+
+    echo "$OPENRC_SERVICE" > /etc/init.d/sing-box
+    chmod +x /etc/init.d/sing-box
+  else
+    # 原有的 systemd 服务创建代码
+    SING_BOX_SERVICE="[Unit]
 Description=sing-box service
 Documentation=https://sing-box.sagernet.org
 After=network.target nss-lookup.target
@@ -1738,11 +1939,11 @@ User=root
 Type=simple
 NoNewPrivileges=yes
 TimeoutStartSec=0
-WorkingDirectory=$WORK_DIR
+WorkingDirectory=${WORK_DIR}
 "
-  [[ -n "$PORT_NGINX" && "$IS_CENTOS" != 'CentOS7' ]] && SING_BOX_SERVICE+="ExecStartPre=$(type -p nginx) -c $WORK_DIR/nginx.conf
+    [[ -n "$PORT_NGINX" && "$IS_CENTOS" != 'CentOS7' ]] && SING_BOX_SERVICE+="ExecStartPre=$(type -p nginx) -c ${WORK_DIR}/nginx.conf
 "
-  SING_BOX_SERVICE+="ExecStart=$WORK_DIR/sing-box run -C $WORK_DIR/conf/
+    SING_BOX_SERVICE+="ExecStart=${WORK_DIR}/sing-box run -C ${WORK_DIR}/conf
 ExecReload=/bin/kill -HUP \$MAINPID
 Restart=on-failure
 RestartSec=10
@@ -1751,76 +1952,127 @@ LimitNOFILE=infinity
 [Install]
 WantedBy=multi-user.target"
 
-  echo "$SING_BOX_SERVICE" > /etc/systemd/system/sing-box.service
+    echo "$SING_BOX_SERVICE" > /etc/systemd/system/sing-box.service
+    systemctl daemon-reload
+  fi
 }
 
 # Argo 生成守护进程文件
 argo_systemd() {
-  cat > /etc/systemd/system/argo.service << EOF
+  if [ "$SYSTEM" = 'Alpine' ]; then
+    # 分离命令和参数
+    local COMMAND="${ARGO_RUNS%% --*}"  # 提取命令部分（包括 cloudflared tunnel）
+    local ARGS="${ARGO_RUNS#$COMMAND}"  # 提取参数部分
+
+    cat > /etc/init.d/argo << EOF
+#!/sbin/openrc-run
+
+name="argo"
+description="Cloudflare Tunnel service"
+command="${COMMAND}"
+command_args="${ARGS}"
+pidfile="/var/run/\${RC_SVCNAME}.pid"
+command_background="yes"
+output_log="${WORK_DIR}/logs/argo.log"
+error_log="${WORK_DIR}/logs/argo.log"
+
+depend() {
+    need net
+    after net
+}
+
+start_pre() {
+    # 确保日志目录和PID目录存在并有正确权限
+    mkdir -p ${WORK_DIR}/logs
+    mkdir -p /var/run
+    chmod 755 /var/run
+
+    # 确保 PID 文件不存在，避免启动失败
+    rm -f \$pidfile
+}
+EOF
+    chmod +x /etc/init.d/argo
+  else
+    # 原有的 systemd 服务创建代码
+    cat > /etc/systemd/system/argo.service << EOF
 [Unit]
 Description=Cloudflare Tunnel
 After=network.target
 
 [Service]
 Type=simple
+WorkingDirectory=$WORK_DIR
 NoNewPrivileges=yes
 TimeoutStartSec=0
-ExecStart=$ARGO_RUNS
+ExecStart=${ARGO_RUNS}
 Restart=on-failure
 RestartSec=5s
 
 [Install]
 WantedBy=multi-user.target
 EOF
+    systemctl daemon-reload
+  fi
 }
 
 # 获取原有各协议的参数，先清空所有的 key-value
 fetch_nodes_value() {
-  unset FILE NODE_NAME PORT_XTLS_REALITY UUID TLS_SERVER REALITY_PRIVATE REALITY_PUBLIC PORT_HYSTERIA2 OBFS PORT_TUIC TUIC_PASSWORD TUIC_CONGESTION_CONTROL PORT_SHADOWTLS SHADOWTLS_PASSWORD SHADOWSOCKS_METHOD PORT_SHADOWSOCKS PORT_TROJAN TROJAN_PASSWORD PORT_VMESS_WS VMESS_WS_PATH WS_SERVER_IP WS_SERVER_IP_SHOW VMESS_HOST_DOMAIN CDN PORT_VLESS_WS VLESS_WS_PATH VLESS_HOST_DOMAIN PORT_H2_REALITY PORT_GRPC_REALITY ARGO_DOMAIN
+  unset NODE_NAME PORT_XTLS_REALITY UUID TLS_SERVER REALITY_PRIVATE REALITY_PUBLIC PORT_HYSTERIA2 PORT_TUIC TUIC_PASSWORD TUIC_CONGESTION_CONTROL PORT_SHADOWTLS SHADOWTLS_PASSWORD SHADOWSOCKS_METHOD PORT_SHADOWSOCKS PORT_TROJAN TROJAN_PASSWORD PORT_VMESS_WS VMESS_WS_PATH WS_SERVER_IP WS_SERVER_IP_SHOW VMESS_HOST_DOMAIN CDN PORT_VLESS_WS VLESS_WS_PATH VLESS_HOST_DOMAIN PORT_H2_REALITY PORT_GRPC_REALITY ARGO_DOMAIN PORT_ANYTLS
 
   # 获取公共数据
-  ls $WORK_DIR/conf/*-ws*inbounds.json >/dev/null 2>&1 && SERVER_IP=$(awk -F '"' '/"WS_SERVER_IP_SHOW"/{print $4; exit}' $WORK_DIR/conf/*-ws*inbounds.json) || SERVER_IP=$(grep -A1 '"tag"' $WORK_DIR/list | sed -E '/-ws(-tls)*",$/{N;d}' | awk -F '"' '/"server"/{count++; if (count == 1) {print $4; exit}}')
-  EXISTED_PORTS=$(awk -F ':|,' '/listen_port/{print $2}' $WORK_DIR/conf/*_inbounds.json)
+  ls ${WORK_DIR}/conf/*-ws*inbounds.json >/dev/null 2>&1 && SERVER_IP=$(awk -F '"' '/"WS_SERVER_IP_SHOW"/{print $4; exit}' ${WORK_DIR}/conf/*-ws*inbounds.json) || SERVER_IP=$(grep -A1 '"tag"' ${WORK_DIR}/list | sed -E '/-ws(-tls)*",$/{N;d}' | awk -F '"' '/"server"/{count++; if (count == 1) {print $4; exit}}')
+  EXISTED_PORTS=$(awk -F ':|,' '/listen_port/{print $2}' ${WORK_DIR}/conf/*_inbounds.json)
   START_PORT=$(awk 'NR == 1 { min = $0 } { if ($0 < min) min = $0; count++ } END {print min}' <<< "$EXISTED_PORTS")
-  [[ -z "$NODE_NAME_CONFIRM" && -s $WORK_DIR/subscribe/clash ]] && NODE_NAME_CONFIRM=$(awk -F "'" '/u: &u/{print $2; exit}' $WORK_DIR/subscribe/clash)
+  [[ -z "$NODE_NAME_CONFIRM" && -s ${WORK_DIR}/subscribe/clash ]] && NODE_NAME_CONFIRM=$(awk -F "'" '/u: &u/{print $2; exit}' ${WORK_DIR}/subscribe/clash)
 
   # 如有 Argo，获取 Argo Tunnel
-  [[ ${STATUS[1]} =~ $(text 27)|$(text 28) ]] && grep -q '\--url' /etc/systemd/system/argo.service && cmd_systemctl enable argo && sleep 2 && [ "$(systemctl is-active argo)" = 'active' ] && fetch_quicktunnel_domain
+  if [[ ${STATUS[1]} =~ $(text 27)|$(text 28) ]]; then
+    if [ "$SYSTEM" = 'Alpine' ]; then
+      # Alpine 系统使用 OpenRC
+      grep -q '\--url' /etc/init.d/argo && { cmd_systemctl enable argo; sleep 2 && cmd_systemctl status argo &>/dev/null && fetch_quicktunnel_domain; }
+    else
+      # 非 Alpine 系统使用 systemd
+      grep -q '\--url' /etc/systemd/system/argo.service && { cmd_systemctl enable argo; sleep 2 && cmd_systemctl status argo &>/dev/null && fetch_quicktunnel_domain; }
+    fi
+  fi
 
   # 获取 Nginx 端口和路径
-  [[ "${IS_SUB}" = 'is_sub' || "${IS_ARGO}" = 'is_argo' ]] && local NGINX_JSON=$(cat $WORK_DIR/nginx.conf) &&
+  [[ "${IS_SUB}" = 'is_sub' || "${IS_ARGO}" = 'is_argo' ]] && local NGINX_JSON=$(cat ${WORK_DIR}/nginx.conf) &&
   PORT_NGINX=$(awk '/listen/{print $2; exit}' <<< "$NGINX_JSON") &&
   UUID_CONFIRM=$(awk -F '/' '/location ~ \^/{print $2; exit}' <<< "$NGINX_JSON")
 
   # 获取 XTLS + Reality key-value
-  [ -s $WORK_DIR/conf/*_${NODE_TAG[0]}_inbounds.json ] && local JSON=$(cat $WORK_DIR/conf/*_${NODE_TAG[0]}_inbounds.json) && NODE_NAME[11]=$(sed -n "s/.*\"tag\":\"\(.*\) ${NODE_TAG[0]}.*/\1/p" <<< "$JSON") && PORT_XTLS_REALITY=$(sed -n 's/.*"listen_port":\([0-9]\+\),/\1/gp' <<< "$JSON") && UUID[11]=$(awk -F '"' '/"uuid"/{print $4}' <<< "$JSON") && TLS_SERVER[11]=$(awk -F '"' '/"server_name"/{print $4}' <<< "$JSON") && REALITY_PRIVATE[11]=$(awk -F '"' '/"private_key"/{print $4}' <<< "$JSON") && REALITY_PUBLIC[11]=$(awk -F '"' '/"public_key"/{print $4}' <<< "$JSON")
+  [ -s ${WORK_DIR}/conf/*_${NODE_TAG[0]}_inbounds.json ] && local JSON=$(cat ${WORK_DIR}/conf/*_${NODE_TAG[0]}_inbounds.json) && NODE_NAME[11]=$(sed -n "s/.*\"tag\":\"\(.*\) ${NODE_TAG[0]}.*/\1/p" <<< "$JSON") && PORT_XTLS_REALITY=$(sed -n 's/.*"listen_port":\([0-9]\+\),/\1/gp' <<< "$JSON") && UUID[11]=$(awk -F '"' '/"uuid"/{print $4}' <<< "$JSON") && TLS_SERVER[11]=$(awk -F '"' '/"server_name"/{print $4}' <<< "$JSON") && REALITY_PRIVATE[11]=$(awk -F '"' '/"private_key"/{print $4}' <<< "$JSON") && REALITY_PUBLIC[11]=$(awk -F '"' '/"public_key"/{print $4}' <<< "$JSON")
 
   # 获取 Hysteria2 key-value
-  [ -s $WORK_DIR/conf/*_${NODE_TAG[1]}_inbounds.json ] && local JSON=$(cat $WORK_DIR/conf/*_${NODE_TAG[1]}_inbounds.json) && NODE_NAME[12]=$(sed -n "s/.*\"tag\":\"\(.*\) ${NODE_TAG[1]}.*/\1/p" <<< "$JSON") && PORT_HYSTERIA2=$(sed -n 's/.*"listen_port":\([0-9]\+\),/\1/gp' <<< "$JSON") && UUID[12]=$(awk -F '"' '/"password"/{count++; if (count == 1) {print $4; exit}}' <<< "$JSON") && check_port_hopping_nat
+  [ -s ${WORK_DIR}/conf/*_${NODE_TAG[1]}_inbounds.json ] && local JSON=$(cat ${WORK_DIR}/conf/*_${NODE_TAG[1]}_inbounds.json) && NODE_NAME[12]=$(sed -n "s/.*\"tag\":\"\(.*\) ${NODE_TAG[1]}.*/\1/p" <<< "$JSON") && PORT_HYSTERIA2=$(sed -n 's/.*"listen_port":\([0-9]\+\),/\1/gp' <<< "$JSON") && UUID[12]=$(awk -F '"' '/"password"/{count++; if (count == 1) {print $4; exit}}' <<< "$JSON") && check_port_hopping_nat
 
   # 获取 Tuic V5 key-value
-  [ -s $WORK_DIR/conf/*_${NODE_TAG[2]}_inbounds.json ] && local JSON=$(cat $WORK_DIR/conf/*_${NODE_TAG[2]}_inbounds.json) && NODE_NAME[13]=$(sed -n "s/.*\"tag\":\"\(.*\) ${NODE_TAG[2]}.*/\1/p" <<< "$JSON") && PORT_TUIC=$(sed -n 's/.*"listen_port":\([0-9]\+\),/\1/gp' <<< "$JSON") && UUID[13]=$(awk -F '"' '/"uuid"/{print $4}' <<< "$JSON") && TUIC_PASSWORD=$(awk -F '"' '/"password"/{print $4}' <<< "$JSON") && TUIC_CONGESTION_CONTROL=$(awk -F '"' '/"congestion_control"/{print $4}' <<< "$JSON")
+  [ -s ${WORK_DIR}/conf/*_${NODE_TAG[2]}_inbounds.json ] && local JSON=$(cat ${WORK_DIR}/conf/*_${NODE_TAG[2]}_inbounds.json) && NODE_NAME[13]=$(sed -n "s/.*\"tag\":\"\(.*\) ${NODE_TAG[2]}.*/\1/p" <<< "$JSON") && PORT_TUIC=$(sed -n 's/.*"listen_port":\([0-9]\+\),/\1/gp' <<< "$JSON") && UUID[13]=$(awk -F '"' '/"uuid"/{print $4}' <<< "$JSON") && TUIC_PASSWORD=$(awk -F '"' '/"password"/{print $4}' <<< "$JSON") && TUIC_CONGESTION_CONTROL=$(awk -F '"' '/"congestion_control"/{print $4}' <<< "$JSON")
 
   # 获取 ShadowTLS key-value
-  [ -s $WORK_DIR/conf/*_${NODE_TAG[3]}_inbounds.json ] && local JSON=$(cat $WORK_DIR/conf/*_${NODE_TAG[3]}_inbounds.json) && NODE_NAME[14]=$(sed -n "s/.*\"tag\":\"\(.*\) ${NODE_TAG[3]}.*/\1/p" <<< "$JSON") && PORT_SHADOWTLS=$(sed -n 's/.*"listen_port":\([0-9]\+\),/\1/gp' <<< "$JSON") && UUID[14]=$(awk -F '"' '/"password"/{count++; if (count == 1) {print $4; exit}}' <<< "$JSON") && SHADOWTLS_PASSWORD=$(awk -F '"' '/"password"/{count++; if (count == 2) {print $4; exit}}' <<< "$JSON") && TLS_SERVER[14]=$(awk -F '"' '/"server"/{print $4}' <<< "$JSON") && SHADOWTLS_METHOD=$(awk -F '"' '/"method"/{print $4}' <<< "$JSON")
+  [ -s ${WORK_DIR}/conf/*_${NODE_TAG[3]}_inbounds.json ] && local JSON=$(cat ${WORK_DIR}/conf/*_${NODE_TAG[3]}_inbounds.json) && NODE_NAME[14]=$(sed -n "s/.*\"tag\":\"\(.*\) ${NODE_TAG[3]}.*/\1/p" <<< "$JSON") && PORT_SHADOWTLS=$(sed -n 's/.*"listen_port":\([0-9]\+\),/\1/gp' <<< "$JSON") && UUID[14]=$(awk -F '"' '/"password"/{count++; if (count == 1) {print $4; exit}}' <<< "$JSON") && SHADOWTLS_PASSWORD=$(awk -F '"' '/"password"/{count++; if (count == 2) {print $4; exit}}' <<< "$JSON") && TLS_SERVER[14]=$(awk -F '"' '/"server"/{print $4}' <<< "$JSON") && SHADOWTLS_METHOD=$(awk -F '"' '/"method"/{print $4}' <<< "$JSON")
 
   # 获取 Shadowsocks key-value
-  [ -s $WORK_DIR/conf/*_${NODE_TAG[4]}_inbounds.json ] && local JSON=$(cat $WORK_DIR/conf/*_${NODE_TAG[4]}_inbounds.json) && NODE_NAME[15]=$(sed -n "s/.*\"tag\":\"\(.*\) ${NODE_TAG[4]}.*/\1/p" <<< "$JSON") && PORT_SHADOWSOCKS=$(sed -n 's/.*"listen_port":\([0-9]\+\),/\1/gp' <<< "$JSON") && UUID[15]=$(awk -F '"' '/"password"/{print $4}' <<< "$JSON") && SHADOWSOCKS_METHOD=$(awk -F '"' '/"method"/{print $4}' <<< "$JSON")
+  [ -s ${WORK_DIR}/conf/*_${NODE_TAG[4]}_inbounds.json ] && local JSON=$(cat ${WORK_DIR}/conf/*_${NODE_TAG[4]}_inbounds.json) && NODE_NAME[15]=$(sed -n "s/.*\"tag\":\"\(.*\) ${NODE_TAG[4]}.*/\1/p" <<< "$JSON") && PORT_SHADOWSOCKS=$(sed -n 's/.*"listen_port":\([0-9]\+\),/\1/gp' <<< "$JSON") && UUID[15]=$(awk -F '"' '/"password"/{print $4}' <<< "$JSON") && SHADOWSOCKS_METHOD=$(awk -F '"' '/"method"/{print $4}' <<< "$JSON")
 
   # 获取 Trojan key-value
-  [ -s $WORK_DIR/conf/*_${NODE_TAG[5]}_inbounds.json ] && local JSON=$(cat $WORK_DIR/conf/*_${NODE_TAG[5]}_inbounds.json) && NODE_NAME[16]=$(sed -n "s/.*\"tag\":\"\(.*\) ${NODE_TAG[5]}.*/\1/p" <<< "$JSON") && PORT_TROJAN=$(sed -n 's/.*"listen_port":\([0-9]\+\),/\1/gp' <<< "$JSON") && TROJAN_PASSWORD=$(awk -F '"' '/"password"/{print $4}' <<< "$JSON")
+  [ -s ${WORK_DIR}/conf/*_${NODE_TAG[5]}_inbounds.json ] && local JSON=$(cat ${WORK_DIR}/conf/*_${NODE_TAG[5]}_inbounds.json) && NODE_NAME[16]=$(sed -n "s/.*\"tag\":\"\(.*\) ${NODE_TAG[5]}.*/\1/p" <<< "$JSON") && PORT_TROJAN=$(sed -n 's/.*"listen_port":\([0-9]\+\),/\1/gp' <<< "$JSON") && TROJAN_PASSWORD=$(awk -F '"' '/"password"/{print $4}' <<< "$JSON")
 
   # 获取 vmess + ws key-value
-  [ -s $WORK_DIR/conf/*_${NODE_TAG[6]}_inbounds.json ] && local JSON=$(cat $WORK_DIR/conf/*_${NODE_TAG[6]}_inbounds.json) && NODE_NAME[17]=$(sed -n "s/.*\"tag\":\"\(.*\) ${NODE_TAG[6]}.*/\1/p" <<< "$JSON") && PORT_VMESS_WS=$(sed -n 's/.*"listen_port":\([0-9]\+\),/\1/gp' <<< "$JSON") && UUID[17]=$(awk -F '"' '/"uuid"/{print $4}' <<< "$JSON") && VMESS_WS_PATH=$(sed -n 's#.*"path":"/\(.*\)",#\1#p' <<< "$JSON") && WS_SERVER_IP[17]=$(awk  -F '"' '/"WS_SERVER_IP_SHOW"/{print $4}' <<< "$JSON") && CDN[17]=$(awk  -F '"' '/"CDN"/{print $4}' <<< "$JSON") && [[ "${STATUS[1]}" =~ $(text 27)|$(text 28) ]] && ARGO_DOMAIN=$(awk  -F '"' '/"VMESS_HOST_DOMAIN"/{print $4}' <<< "$JSON") || VMESS_HOST_DOMAIN=$(awk  -F '"' '/"VMESS_HOST_DOMAIN"/{print $4}' <<< "$JSON")
+  [ -s ${WORK_DIR}/conf/*_${NODE_TAG[6]}_inbounds.json ] && local JSON=$(cat ${WORK_DIR}/conf/*_${NODE_TAG[6]}_inbounds.json) && NODE_NAME[17]=$(sed -n "s/.*\"tag\":\"\(.*\) ${NODE_TAG[6]}.*/\1/p" <<< "$JSON") && PORT_VMESS_WS=$(sed -n 's/.*"listen_port":\([0-9]\+\),/\1/gp' <<< "$JSON") && UUID[17]=$(awk -F '"' '/"uuid"/{print $4}' <<< "$JSON") && VMESS_WS_PATH=$(sed -n 's#.*"path":"/\(.*\)",#\1#p' <<< "$JSON") && WS_SERVER_IP[17]=$(awk  -F '"' '/"WS_SERVER_IP_SHOW"/{print $4}' <<< "$JSON") && CDN[17]=$(awk  -F '"' '/"CDN"/{print $4}' <<< "$JSON") && [[ "${STATUS[1]}" =~ $(text 27)|$(text 28) ]] && ARGO_DOMAIN=$(awk  -F '"' '/"VMESS_HOST_DOMAIN"/{print $4}' <<< "$JSON") || VMESS_HOST_DOMAIN=$(awk  -F '"' '/"VMESS_HOST_DOMAIN"/{print $4}' <<< "$JSON")
 
   # 获取 vless + ws + tls key-value
-  [ -s $WORK_DIR/conf/*_${NODE_TAG[7]}_inbounds.json ] && local JSON=$(cat $WORK_DIR/conf/*_${NODE_TAG[7]}_inbounds.json) && NODE_NAME[18]=$(sed -n "s/.*\"tag\":\"\(.*\) ${NODE_TAG[7]}.*/\1/p" <<< "$JSON") && PORT_VLESS_WS=$(sed -n 's/.*"listen_port":\([0-9]\+\),/\1/gp' <<< "$JSON") && UUID[18]=$(awk -F '"' '/"uuid"/{print $4}' <<< "$JSON") && VLESS_WS_PATH=$(sed -n 's#.*"path":"/\(.*\)",#\1#p' <<< "$JSON") && WS_SERVER_IP[18]=$(awk  -F '"' '/"WS_SERVER_IP_SHOW"/{print $4}' <<< "$JSON") && CDN[18]=$(awk  -F '"' '/"CDN"/{print $4}' <<< "$JSON") && [[ "${STATUS[1]}" =~ $(text 27)|$(text 28) ]] && ARGO_DOMAIN=$(awk -F '"' '/"server_name"/{print $4}' <<< "$JSON") || VLESS_HOST_DOMAIN=$(awk -F '"' '/"server_name"/{print $4}' <<< "$JSON")
+  [ -s ${WORK_DIR}/conf/*_${NODE_TAG[7]}_inbounds.json ] && local JSON=$(cat ${WORK_DIR}/conf/*_${NODE_TAG[7]}_inbounds.json) && NODE_NAME[18]=$(sed -n "s/.*\"tag\":\"\(.*\) ${NODE_TAG[7]}.*/\1/p" <<< "$JSON") && PORT_VLESS_WS=$(sed -n 's/.*"listen_port":\([0-9]\+\),/\1/gp' <<< "$JSON") && UUID[18]=$(awk -F '"' '/"uuid"/{print $4}' <<< "$JSON") && VLESS_WS_PATH=$(sed -n 's#.*"path":"/\(.*\)",#\1#p' <<< "$JSON") && WS_SERVER_IP[18]=$(awk  -F '"' '/"WS_SERVER_IP_SHOW"/{print $4}' <<< "$JSON") && CDN[18]=$(awk  -F '"' '/"CDN"/{print $4}' <<< "$JSON") && [[ "${STATUS[1]}" =~ $(text 27)|$(text 28) ]] && ARGO_DOMAIN=$(awk -F '"' '/"server_name"/{print $4}' <<< "$JSON") || VLESS_HOST_DOMAIN=$(awk -F '"' '/"server_name"/{print $4}' <<< "$JSON")
 
   # 获取 H2 + Reality key-value
-  [ -s $WORK_DIR/conf/*_${NODE_TAG[8]}_inbounds.json ] && local JSON=$(cat $WORK_DIR/conf/*_${NODE_TAG[8]}_inbounds.json) && NODE_NAME[19]=$(sed -n "s/.*\"tag\":\"\(.*\) ${NODE_TAG[8]}.*/\1/p" <<< "$JSON") && PORT_H2_REALITY=$(sed -n 's/.*"listen_port":\([0-9]\+\),/\1/gp' <<< "$JSON") && UUID[19]=$(awk -F '"' '/"uuid"/{print $4}' <<< "$JSON") && TLS_SERVER[19]=$(awk -F '"' '/"server"/{print $4}' <<< "$JSON") && REALITY_PRIVATE[19]=$(awk -F '"' '/"private_key"/{print $4}' <<< "$JSON") && REALITY_PUBLIC[19]=$(awk -F '"' '/"public_key"/{print $4}' <<< "$JSON")
+  [ -s ${WORK_DIR}/conf/*_${NODE_TAG[8]}_inbounds.json ] && local JSON=$(cat ${WORK_DIR}/conf/*_${NODE_TAG[8]}_inbounds.json) && NODE_NAME[19]=$(sed -n "s/.*\"tag\":\"\(.*\) ${NODE_TAG[8]}.*/\1/p" <<< "$JSON") && PORT_H2_REALITY=$(sed -n 's/.*"listen_port":\([0-9]\+\),/\1/gp' <<< "$JSON") && UUID[19]=$(awk -F '"' '/"uuid"/{print $4}' <<< "$JSON") && TLS_SERVER[19]=$(awk -F '"' '/"server"/{print $4}' <<< "$JSON") && REALITY_PRIVATE[19]=$(awk -F '"' '/"private_key"/{print $4}' <<< "$JSON") && REALITY_PUBLIC[19]=$(awk -F '"' '/"public_key"/{print $4}' <<< "$JSON")
 
   # 获取 gRPC + Reality key-value
-  [ -s $WORK_DIR/conf/*_${NODE_TAG[9]}_inbounds.json ] && local JSON=$(cat $WORK_DIR/conf/*_${NODE_TAG[9]}_inbounds.json) && NODE_NAME[20]=$(sed -n "s/.*\"tag\":\"\(.*\) ${NODE_TAG[9]}.*/\1/p" <<< "$JSON") && PORT_GRPC_REALITY=$(sed -n 's/.*"listen_port":\([0-9]\+\),/\1/gp' <<< "$JSON") && UUID[20]=$(awk -F '"' '/"uuid"/{print $4}' <<< "$JSON") && TLS_SERVER[20]=$(awk -F '"' '/"server"/{print $4}' <<< "$JSON") && REALITY_PRIVATE[20]=$(awk -F '"' '/"private_key"/{print $4}' <<< "$JSON") && REALITY_PUBLIC[20]=$(awk -F '"' '/"public_key"/{print $4}' <<< "$JSON")
+  [ -s ${WORK_DIR}/conf/*_${NODE_TAG[9]}_inbounds.json ] && local JSON=$(cat ${WORK_DIR}/conf/*_${NODE_TAG[9]}_inbounds.json) && NODE_NAME[20]=$(sed -n "s/.*\"tag\":\"\(.*\) ${NODE_TAG[9]}.*/\1/p" <<< "$JSON") && PORT_GRPC_REALITY=$(sed -n 's/.*"listen_port":\([0-9]\+\),/\1/gp' <<< "$JSON") && UUID[20]=$(awk -F '"' '/"uuid"/{print $4}' <<< "$JSON") && TLS_SERVER[20]=$(awk -F '"' '/"server"/{print $4}' <<< "$JSON") && REALITY_PRIVATE[20]=$(awk -F '"' '/"private_key"/{print $4}' <<< "$JSON") && REALITY_PUBLIC[20]=$(awk -F '"' '/"public_key"/{print $4}' <<< "$JSON")
+
+  # 获取 anytls key-value
+  [ -s ${WORK_DIR}/conf/*_${NODE_TAG[10]}_inbounds.json ] && local JSON=$(cat ${WORK_DIR}/conf/*_${NODE_TAG[10]}_inbounds.json) && NODE_NAME[21]=$(sed -n "s/.*\"tag\":\"\(.*\) ${NODE_TAG[10]}.*/\1/p" <<< "$JSON") && PORT_ANYTLS=$(sed -n 's/.*"listen_port":\([0-9]\+\),/\1/gp' <<< "$JSON") && UUID[21]=$(awk -F '"' '/"password"/{print $4}' <<< "$JSON")
 }
 
 # 获取 Argo 临时隧道域名
@@ -1828,16 +2080,16 @@ fetch_quicktunnel_domain() {
   unset CLOUDFLARED_PID METRICS_ADDRESS ARGO_DOMAIN
   local QUICKTUNNEL_ERROR_TIME=20
   until [ -n "$ARGO_DOMAIN" ]; do
-    [ "$SYSTEM" = 'Alpine' ] && CLOUDFLARED_PID=$(ps -ef | awk -v WORK_DIR="$WORK_DIR" '$0 ~ WORK_DIR"/cloudflared" {print $1; exit}') || CLOUDFLARED_PID=$(ps -ef | awk -v WORK_DIR="$WORK_DIR" '$0 ~ WORK_DIR"/cloudflared" {print $2; exit}')
-    [[ -z "$METRICS_ADDRESS" && "$CLOUDFLARED_PID" =~ ^[0-9]+$ ]] && METRICS_ADDRESS=$(ss -nltp | grep "pid=$CLOUDFLARED_PID" | awk '{print $4}')
+    [ "$SYSTEM" = 'Alpine' ] && local CLOUDFLARED_PID=$(ps -ef | awk -v WORK_DIR="${WORK_DIR}" '$0 ~ WORK_DIR"/cloudflared" {print $1; exit}') || local CLOUDFLARED_PID=$(ps -ef | awk -v WORK_DIR="${WORK_DIR}" '$0 ~ WORK_DIR"/cloudflared" {print $2; exit}')
+    [[ -z "$METRICS_ADDRESS" && "$CLOUDFLARED_PID" =~ ^[0-9]+$ ]] && local METRICS_ADDRESS=$(ss -nltp | grep "pid=$CLOUDFLARED_PID" | awk '{print $4}')
     [ -n "$METRICS_ADDRESS" ] && ARGO_DOMAIN=$(wget -qO- http://$METRICS_ADDRESS/quicktunnel | awk -F '"' '{print $4}')
     [[ ! "$ARGO_DOMAIN" =~ trycloudflare\.com$ ]] && (( QUICKTUNNEL_ERROR_TIME-- )) && sleep 2 || break
     [ "$QUICKTUNNEL_ERROR_TIME" = '0' ] && error " $(text 93) "
   done
 
   # 把临时隧道写到 Sing-box 相应的 ws inbounds 文件
-  [ -s $WORK_DIR/conf/17_${NODE_TAG[6]}_inbounds.json ] && sed -i "s/VMESS_HOST_DOMAIN.*/VMESS_HOST_DOMAIN\": \"$ARGO_DOMAIN\"/" $WORK_DIR/conf/17_${NODE_TAG[6]}_inbounds.json
-  [ -s $WORK_DIR/conf/18_${NODE_TAG[7]}_inbounds.json ] && sed -i "s/\"server_name\":.*/\"server_name\": \"$ARGO_DOMAIN\",/" $WORK_DIR/conf/18_${NODE_TAG[7]}_inbounds.json
+  [ -s ${WORK_DIR}/conf/17_${NODE_TAG[6]}_inbounds.json ] && sed -i "s/VMESS_HOST_DOMAIN.*/VMESS_HOST_DOMAIN\": \"$ARGO_DOMAIN\"/" ${WORK_DIR}/conf/17_${NODE_TAG[6]}_inbounds.json
+  [ -s ${WORK_DIR}/conf/18_${NODE_TAG[7]}_inbounds.json ] && sed -i "s/\"server_name\":.*/\"server_name\": \"$ARGO_DOMAIN\",/" ${WORK_DIR}/conf/18_${NODE_TAG[7]}_inbounds.json
 }
 
 # 安装 sing-box 全家桶
@@ -1845,45 +2097,62 @@ install_sing-box() {
   sing-box_variables
   [ -n "$PORT_NGINX" ] && check_nginx
   [ ! -d /etc/systemd/system ] && mkdir -p /etc/systemd/system
-  [ ! -d $WORK_DIR/logs ] && mkdir -p $WORK_DIR/logs
+  [ ! -d ${WORK_DIR}/logs ] && mkdir -p ${WORK_DIR}/logs
   ssl_certificate
   [ "$SYSTEM" = 'CentOS' ] && check_firewall_configuration
   hint "\n $(text 2) " && wait
   sing-box_json
-  echo "${L^^}" > $WORK_DIR/language
-  cp $TEMP_DIR/sing-box $TEMP_DIR/jq $WORK_DIR
-  [ -x $TEMP_DIR/qrencode ] && cp $TEMP_DIR/qrencode $WORK_DIR
+  echo "${L^^}" > ${WORK_DIR}/language
+  cp $TEMP_DIR/sing-box $TEMP_DIR/jq ${WORK_DIR}
+  [ -x $TEMP_DIR/qrencode ] && cp $TEMP_DIR/qrencode ${WORK_DIR}
 
   # 生成 sing-box systemd 配置文件
   sing-box_systemd
 
   # 生成 Argo systemd 配置文件，并复制 cloudflared 可执行二进制文件
-  cp $TEMP_DIR/cloudflared $WORK_DIR
+  cp $TEMP_DIR/cloudflared ${WORK_DIR}
   [ -n "$ARGO_RUNS" ] && argo_systemd
 
   # 如果是 Json Argo，把配置文件复制到工作目录
-  [ -n "$ARGO_JSON" ] && cp $TEMP_DIR/tunnel.* $WORK_DIR
+  [ -n "$ARGO_JSON" ] && cp $TEMP_DIR/tunnel.* ${WORK_DIR}
 
   # 生成 Nginx 配置文件
   [ -n "$PORT_NGINX" ] && export_nginx_conf_file
 
-  # 如果 Alpine 系统，放到开机自启动
-  if [ "$SYSTEM" = 'Alpine' ]; then
-    cat > /etc/local.d/sing-box.start << EOF
-#!/usr/bin/env bash
+  # 非 Alpine 系统启动 sing-box 服务
+  [ "$SYSTEM" != 'Alpine' ] && cmd_systemctl daemon-reload
+  cmd_systemctl enable sing-box
 
-systemctl start sing-box
-EOF
-    chmod +x /etc/local.d/sing-box.start
-    rc-update add local >/dev/null 2>&1
+  # 等待服务启动
+  sleep 2
+
+  # 检查服务是否成功启动
+  if cmd_systemctl status sing-box &>/dev/null; then
+    STATUS[0]=$(text 28)
+    info "\n Sing-box $(text 28) $(text 37) \n"
+  else
+    STATUS[0]=$(text 27)
+    error "\n Sing-box $(text 27) $(text 38) \n"
+    # 如果启动失败，再尝试重启
+    cmd_systemctl restart sing-box
   fi
 
-  # 等待所有后台进程完成后,再次检测状态，运行 Sing-box
-  check_install
-  sleep 1
-  check_sing-box_status
+  # 如果配置了 Argo，也启动 Argo 服务
   if [ "$IS_ARGO" = 'is_argo' ]; then
-    [ "$NONINTERACTIVE_INSTALL" = 'noninteractive_install' ] && cmd_systemctl enable argo || check_argo_status
+    cmd_systemctl enable argo
+
+    sleep 2
+
+    # 检查 Argo 服务是否成功启动
+    if cmd_systemctl status argo &>/dev/null; then
+      STATUS[1]=$(text 28)
+      info "\n Argo $(text 28) $(text 37) \n"
+    else
+      STATUS[1]=$(text 27)
+      error "\n Argo $(text 27) $(text 38) \n"
+      # 如果启动失败，再尝试重启
+      cmd_systemctl restart argo
+    fi
   fi
 }
 
@@ -1891,15 +2160,6 @@ export_list() {
   IS_INSTALL=$1
 
   check_install
-
-  #### v1.1.9 处理的 jq 和 qrencode 二进制文件代替系统依赖的问题，此处预计6月30日删除
-  if [[ "${IS_SUB}" = 'is_sub' || "${IS_ARGO}" = 'is_argo' ]]; then
-    [[ ! -s $WORK_DIR/jq && -s /usr/bin/jq ]] && cp /usr/bin/jq $WORK_DIR/
-    if [ ! -s $WORK_DIR/qrencode ]; then
-      check_arch
-      wget -qO $WORK_DIR/qrencode ${GH_PROXY}https://github.com/fscarmen/client_template/raw/main/qrencode-go/qrencode-go-linux-$QRENCODE_ARCH && chmod +x $WORK_DIR/qrencode
-    fi
-  fi
 
   [ "$IS_INSTALL" != 'install' ] && fetch_nodes_value
 
@@ -1913,7 +2173,7 @@ export_list() {
   fi
 
   # 使用 Argo 时，获取临时隧道域名
-  ls $WORK_DIR/conf/*-ws*inbounds.json >/dev/null 2>&1 && [ "$IS_ARGO" = 'is_argo' ] && [ -z "$ARGO_DOMAIN" ] && [[ "${STATUS[1]}" = "$(text 28)" || "$NONINTERACTIVE_INSTALL" = 'noninteractive_install' ]] && fetch_quicktunnel_domain
+  ls ${WORK_DIR}/conf/*-ws*inbounds.json >/dev/null 2>&1 && [ "$IS_ARGO" = 'is_argo' ] && [ -z "$ARGO_DOMAIN" ] && [[ "${STATUS[1]}" = "$(text 28)" || "$NONINTERACTIVE_INSTALL" = 'noninteractive_install' ]] && fetch_quicktunnel_domain
 
   # 如果使用 Json 或者 Token Argo，则使用加密的而且是固定的 Argo 隧道域名，否则使用 IP:PORT 的 http 服务
   [[ "$ARGO_TYPE" = 'is_token_argo' || "$ARGO_TYPE" = 'is_json_argo' ]] && SUBSCRIBE_ADDRESS="https://$ARGO_DOMAIN" || SUBSCRIBE_ADDRESS="http://${SERVER_IP_1}:${PORT_NGINX}"
@@ -1922,7 +2182,7 @@ export_list() {
   # 生成 Clash proxy providers 订阅文件
   local CLASH_SUBSCRIBE='proxies:'
 
-  [ -n "$PORT_XTLS_REALITY" ] && local CLASH_XTLS_REALITY="- {name: \"${NODE_NAME[11]} ${NODE_TAG[0]}\", type: vless, server: ${SERVER_IP}, port: ${PORT_XTLS_REALITY}, uuid: ${UUID[11]}, network: tcp, udp: true, tls: true, servername: ${TLS_SERVER[11]}, client-fingerprint: chrome, reality-opts: {public-key: ${REALITY_PUBLIC[11]}, short-id: \"\"}, smux: { enabled: true, protocol: 'h2mux', padding: true, max-connections: '8', min-streams: '16', statistic: true, only-tcp: false } }" &&
+  [ -n "$PORT_XTLS_REALITY" ] && local CLASH_XTLS_REALITY="- {name: \"${NODE_NAME[11]} ${NODE_TAG[0]}\", type: vless, server: ${SERVER_IP}, port: ${PORT_XTLS_REALITY}, uuid: ${UUID[11]}, network: tcp, udp: true, tls: true, servername: ${TLS_SERVER[11]}, client-fingerprint: chrome, reality-opts: {public-key: ${REALITY_PUBLIC[11]}, short-id: \"\"}, smux: { enabled: true, protocol: 'h2mux', padding: true, max-connections: '8', min-streams: '16', statistic: true, only-tcp: false }, brutal-opts: { enabled: ${IS_BRUTAL}, up: '1000 Mbps', down: '1000 Mbps' } }" &&
   local CLASH_SUBSCRIBE+="
   $CLASH_XTLS_REALITY
 "
@@ -1938,22 +2198,22 @@ export_list() {
   local CLASH_SUBSCRIBE+="
   $CLASH_TUIC
 "
-  [ -n "$PORT_SHADOWTLS" ] && local CLASH_SHADOWTLS="- {name: \"${NODE_NAME[14]} ${NODE_TAG[3]}\", type: ss, server: ${SERVER_IP}, port: ${PORT_SHADOWTLS}, cipher: $SHADOWTLS_METHOD, password: $SHADOWTLS_PASSWORD, plugin: shadow-tls, client-fingerprint: chrome, plugin-opts: {host: ${TLS_SERVER[14]}, password: \"${UUID[14]}\", version: 3}, smux: { enabled: true, protocol: 'h2mux', padding: true, max-connections: '8', min-streams: '16', statistic: true, only-tcp: false } }" &&
+  [ -n "$PORT_SHADOWTLS" ] && local CLASH_SHADOWTLS="- {name: \"${NODE_NAME[14]} ${NODE_TAG[3]}\", type: ss, server: ${SERVER_IP}, port: ${PORT_SHADOWTLS}, cipher: $SHADOWTLS_METHOD, password: $SHADOWTLS_PASSWORD, plugin: shadow-tls, client-fingerprint: chrome, plugin-opts: {host: ${TLS_SERVER[14]}, password: \"${UUID[14]}\", version: 3}, smux: { enabled: true, protocol: 'h2mux', padding: true, max-connections: '8', min-streams: '16', statistic: true, only-tcp: false }, brutal-opts: { enabled: ${IS_BRUTAL}, up: '1000 Mbps', down: '1000 Mbps' } }" &&
   local CLASH_SUBSCRIBE+="
   $CLASH_SHADOWTLS
 "
 
-  [ -n "$PORT_SHADOWSOCKS" ] && local CLASH_SHADOWSOCKS="- {name: \"${NODE_NAME[15]} ${NODE_TAG[4]}\", type: ss, server: ${SERVER_IP}, port: $PORT_SHADOWSOCKS, cipher: ${SHADOWSOCKS_METHOD}, password: ${UUID[15]}, smux: { enabled: true, protocol: 'h2mux', padding: true, max-connections: '8', min-streams: '16', statistic: true, only-tcp: false } }" &&
+  [ -n "$PORT_SHADOWSOCKS" ] && local CLASH_SHADOWSOCKS="- {name: \"${NODE_NAME[15]} ${NODE_TAG[4]}\", type: ss, server: ${SERVER_IP}, port: $PORT_SHADOWSOCKS, cipher: ${SHADOWSOCKS_METHOD}, password: ${UUID[15]}, smux: { enabled: true, protocol: 'h2mux', padding: true, max-connections: '8', min-streams: '16', statistic: true, only-tcp: false }, brutal-opts: { enabled: ${IS_BRUTAL}, up: '1000 Mbps', down: '1000 Mbps' } }" &&
   local CLASH_SUBSCRIBE+="
   $CLASH_SHADOWSOCKS
 "
-  [ -n "$PORT_TROJAN" ] && local CLASH_TROJAN="- {name: \"${NODE_NAME[16]} ${NODE_TAG[5]}\", type: trojan, server: ${SERVER_IP}, port: $PORT_TROJAN, password: $TROJAN_PASSWORD, client-fingerprint: random, skip-cert-verify: true, smux: { enabled: true, protocol: 'h2mux', padding: true, max-connections: '8', min-streams: '16', statistic: true, only-tcp: false } }" &&
+  [ -n "$PORT_TROJAN" ] && local CLASH_TROJAN="- {name: \"${NODE_NAME[16]} ${NODE_TAG[5]}\", type: trojan, server: ${SERVER_IP}, port: $PORT_TROJAN, password: $TROJAN_PASSWORD, client-fingerprint: random, skip-cert-verify: true, smux: { enabled: true, protocol: 'h2mux', padding: true, max-connections: '8', min-streams: '16', statistic: true, only-tcp: false }, brutal-opts: { enabled: ${IS_BRUTAL}, up: '1000 Mbps', down: '1000 Mbps' } }" &&
   local CLASH_SUBSCRIBE+="
   $CLASH_TROJAN
 "
   if [ -n "$PORT_VMESS_WS" ]; then
     if [[ "${STATUS[1]}" =~ $(text 27)|$(text 28) ]] || [[ "$IS_ARGO" = 'is_argo' && "$NONINTERACTIVE_INSTALL" = 'noninteractive_install' ]]; then
-      local CLASH_VMESS_WS="- {name: \"${NODE_NAME[17]} ${NODE_TAG[6]}\", type: vmess, server: ${CDN[17]}, port: 80, uuid: ${UUID[17]}, udp: true, tls: false, alterId: 0, cipher: auto, skip-cert-verify: true, network: ws, ws-opts: { path: \"/$VMESS_WS_PATH\", headers: {Host: $ARGO_DOMAIN} }, smux: { enabled: true, protocol: 'h2mux', padding: true, max-connections: '8', min-streams: '16', statistic: true, only-tcp: false } }" &&
+      local CLASH_VMESS_WS="- {name: \"${NODE_NAME[17]} ${NODE_TAG[6]}\", type: vmess, server: ${CDN[17]}, port: 80, uuid: ${UUID[17]}, udp: true, tls: false, alterId: 0, cipher: auto, skip-cert-verify: true, network: ws, ws-opts: { path: \"/$VMESS_WS_PATH\", headers: {Host: $ARGO_DOMAIN} }, smux: { enabled: true, protocol: 'h2mux', padding: true, max-connections: '8', min-streams: '16', statistic: true, only-tcp: false }, brutal-opts: { enabled: ${IS_BRUTAL}, up: '1000 Mbps', down: '1000 Mbps' } }" &&
       local CLASH_SUBSCRIBE+="
   $CLASH_VMESS_WS
 "
@@ -1961,7 +2221,7 @@ export_list() {
   # $(text 94)
 "
     else
-      local CLASH_VMESS_WS="- {name: \"${NODE_NAME[17]} ${NODE_TAG[6]}\", type: vmess, server: ${CDN[17]}, port: 80, uuid: ${UUID[17]}, udp: true, tls: false, alterId: 0, cipher: auto, skip-cert-verify: true, network: ws, ws-opts: { path: \"/$VMESS_WS_PATH\", headers: {Host: $VMESS_HOST_DOMAIN} }, smux: { enabled: true, protocol: 'h2mux', padding: true, max-connections: '8', min-streams: '16', statistic: true, only-tcp: false } }" &&
+      local CLASH_VMESS_WS="- {name: \"${NODE_NAME[17]} ${NODE_TAG[6]}\", type: vmess, server: ${CDN[17]}, port: 80, uuid: ${UUID[17]}, udp: true, tls: false, alterId: 0, cipher: auto, skip-cert-verify: true, network: ws, ws-opts: { path: \"/$VMESS_WS_PATH\", headers: {Host: $VMESS_HOST_DOMAIN} }, smux: { enabled: true, protocol: 'h2mux', padding: true, max-connections: '8', min-streams: '16', statistic: true, only-tcp: false }, brutal-opts: { enabled: ${IS_BRUTAL}, up: '1000 Mbps', down: '1000 Mbps' } }" &&
       local WS_SERVER_IP_SHOW=${WS_SERVER_IP[17]} && local TYPE_HOST_DOMAIN=$VMESS_HOST_DOMAIN && local TYPE_PORT_WS=$PORT_VMESS_WS &&
       local CLASH_SUBSCRIBE+="
   $CLASH_VMESS_WS
@@ -1973,7 +2233,7 @@ export_list() {
 
   if [ -n "$PORT_VLESS_WS" ]; then
      if [[ "${STATUS[1]}" =~ $(text 27)|$(text 28) ]] || [[ "$IS_ARGO" = 'is_argo' && "$NONINTERACTIVE_INSTALL" = 'noninteractive_install' ]]; then
-      local CLASH_VLESS_WS="- {name: \"${NODE_NAME[18]} ${NODE_TAG[7]}\", type: vless, server: ${CDN[18]}, port: 443, uuid: ${UUID[18]}, udp: true, tls: true, servername: $ARGO_DOMAIN, network: ws, skip-cert-verify: true, ws-opts: { path: \"/$VLESS_WS_PATH\", headers: {Host: $ARGO_DOMAIN}, max-early-data: 2048, early-data-header-name: Sec-WebSocket-Protocol }, smux: { enabled: true, protocol: 'h2mux', padding: true, max-connections: '8', min-streams: '16', statistic: true, only-tcp: false } }" &&
+      local CLASH_VLESS_WS="- {name: \"${NODE_NAME[18]} ${NODE_TAG[7]}\", type: vless, server: ${CDN[18]}, port: 443, uuid: ${UUID[18]}, udp: true, tls: true, servername: $ARGO_DOMAIN, network: ws, skip-cert-verify: true, ws-opts: { path: \"/$VLESS_WS_PATH\", headers: {Host: $ARGO_DOMAIN}, max-early-data: 2048, early-data-header-name: Sec-WebSocket-Protocol }, smux: { enabled: true, protocol: 'h2mux', padding: true, max-connections: '8', min-streams: '16', statistic: true, only-tcp: false }, brutal-opts: { enabled: ${IS_BRUTAL}, up: '1000 Mbps', down: '1000 Mbps' } }" &&
       local CLASH_SUBSCRIBE+="
   $CLASH_VLESS_WS
 "
@@ -1981,7 +2241,7 @@ export_list() {
   # $(text 94)
 "
     else
-      local CLASH_VLESS_WS="- {name: \"${NODE_NAME[18]} ${NODE_TAG[7]}\", type: vless, server: ${CDN[18]}, port: 443, uuid: ${UUID[18]}, udp: true, tls: true, servername: $VLESS_HOST_DOMAIN, network: ws, skip-cert-verify: true, ws-opts: { path: \"/$VLESS_WS_PATH\", headers: {Host: $VLESS_HOST_DOMAIN}, max-early-data: 2048, early-data-header-name: Sec-WebSocket-Protocol }, smux: { enabled: true, protocol: 'h2mux', padding: true, max-connections: '8', min-streams: '16', statistic: true, only-tcp: false } }" &&
+      local CLASH_VLESS_WS="- {name: \"${NODE_NAME[18]} ${NODE_TAG[7]}\", type: vless, server: ${CDN[18]}, port: 443, uuid: ${UUID[18]}, udp: true, tls: true, servername: $VLESS_HOST_DOMAIN, network: ws, skip-cert-verify: true, ws-opts: { path: \"/$VLESS_WS_PATH\", headers: {Host: $VLESS_HOST_DOMAIN}, max-early-data: 2048, early-data-header-name: Sec-WebSocket-Protocol }, smux: { enabled: true, protocol: 'h2mux', padding: true, max-connections: '8', min-streams: '16', statistic: true, only-tcp: false }, brutal-opts: { enabled: ${IS_BRUTAL}, up: '1000 Mbps', down: '1000 Mbps' } }" &&
       local WS_SERVER_IP_SHOW=${WS_SERVER_IP[18]} && local TYPE_HOST_DOMAIN=$VLESS_HOST_DOMAIN && local TYPE_PORT_WS=$PORT_VLESS_WS &&
       local CLASH_SUBSCRIBE+="
   $CLASH_VLESS_WS
@@ -1994,16 +2254,22 @@ export_list() {
   # Clash 的 H2 传输层未实现多路复用功能，在 Clash.Meta 中更建议使用 gRPC 协议，故不输出相关配置。 https://wiki.metacubex.one/config/proxies/vless/
   [ -n "$PORT_H2_REALITY" ]
 
-  [ -n "$PORT_GRPC_REALITY" ] && local CLASH_GRPC_REALITY="- {name: \"${NODE_NAME[20]} ${NODE_TAG[9]}\", type: vless, server: ${SERVER_IP}, port: ${PORT_GRPC_REALITY}, uuid: ${UUID[20]}, network: grpc, tls: true, udp: true, flow:, client-fingerprint: chrome, servername: ${TLS_SERVER[20]}, grpc-opts: {  grpc-service-name: \"grpc\" }, reality-opts: { public-key: ${REALITY_PUBLIC[20]}, short-id: \"\" }, smux: { enabled: true, protocol: 'h2mux', padding: true, max-connections: '8', min-streams: '16', statistic: true, only-tcp: false } }" &&
+  [ -n "$PORT_GRPC_REALITY" ] && local CLASH_GRPC_REALITY="- {name: \"${NODE_NAME[20]} ${NODE_TAG[9]}\", type: vless, server: ${SERVER_IP}, port: ${PORT_GRPC_REALITY}, uuid: ${UUID[20]}, network: grpc, tls: true, udp: true, flow:, client-fingerprint: chrome, servername: ${TLS_SERVER[20]}, grpc-opts: {  grpc-service-name: \"grpc\" }, reality-opts: { public-key: ${REALITY_PUBLIC[20]}, short-id: \"\" }, smux: { enabled: true, protocol: 'h2mux', padding: true, max-connections: '8', min-streams: '16', statistic: true, only-tcp: false }, brutal-opts: { enabled: ${IS_BRUTAL}, up: '1000 Mbps', down: '1000 Mbps' } }" &&
   local CLASH_SUBSCRIBE+="
   $CLASH_GRPC_REALITY
 "
-  echo -n "${CLASH_SUBSCRIBE}" | sed -E '/^[ ]*#|^--/d' | sed '/^$/d' > $WORK_DIR/subscribe/proxies
+
+  [ -n "$PORT_ANYTLS" ] && local CLASH_ANYTLS="- {name: \"${NODE_NAME[21]} ${NODE_TAG[10]}\", type: anytls, server: ${SERVER_IP}, port: $PORT_ANYTLS, password: ${UUID[21]}, client-fingerprint: chrome, udp: true, idle-session-check-interval: 30, idle-session-timeout: 30, skip-cert-verify: true }" &&
+  local CLASH_SUBSCRIBE+="
+  $CLASH_ANYTLS
+"
+
+  echo -n "${CLASH_SUBSCRIBE}" | sed -E '/^[ ]*#|^--/d' | sed '/^$/d' > ${WORK_DIR}/subscribe/proxies
 
   # 生成 clash 订阅配置文件
 
   # 模板1: 使用 proxy providers
-  wget --no-check-certificate -qO- --tries=3 --timeout=2 ${GH_PROXY}${SUBSCRIBE_TEMPLATE}/clash | sed "s#NODE_NAME#${NODE_NAME_CONFIRM}#g; s#PROXY_PROVIDERS_URL#$SUBSCRIBE_ADDRESS/${UUID_CONFIRM}/proxies#" > $WORK_DIR/subscribe/clash
+  wget --no-check-certificate -qO- --tries=3 --timeout=2 ${GH_PROXY}${SUBSCRIBE_TEMPLATE}/clash | sed "s#NODE_NAME#${NODE_NAME_CONFIRM}#g; s#PROXY_PROVIDERS_URL#$SUBSCRIBE_ADDRESS/${UUID_CONFIRM}/proxies#" > ${WORK_DIR}/subscribe/clash
 
   # 模板2: 不使用 proxy providers
   CLASH2_PORT=("$PORT_XTLS_REALITY" "$PORT_HYSTERIA2" "$PORT_TUIC" "$PORT_SHADOWTLS" "$PORT_SHADOWSOCKS" "$PORT_TROJAN" "$PORT_VMESS_WS" "$PORT_VLESS_WS" "$PORT_GRPC_REALITY")
@@ -2014,7 +2280,7 @@ export_list() {
   for x in ${!CLASH2_PORT[@]}; do
     [[ ${CLASH2_PORT[x]} =~ [0-9]+ ]] && CLASH2_YAML=$(sed "/proxy-groups:/i\  ${CLASH2_PROXY_INSERT[x]}" <<< "$CLASH2_YAML") && CLASH2_YAML=$(sed -E "/- name: (♻️ 自动选择|📲 电报消息|💬 OpenAi|📹 油管视频|🎥 奈飞视频|📺 巴哈姆特|📺 哔哩哔哩|🌍 国外媒体|🌏 国内媒体|📢 谷歌FCM|Ⓜ️ 微软Bing|Ⓜ️ 微软云盘|Ⓜ️ 微软服务|🍎 苹果服务|🎮 游戏平台|🎶 网易音乐|🎯 全球直连)|^rules:$/i\      ${CLASH2_PROXY_GROUPS_INSERT[x]}" <<< "$CLASH2_YAML")
   done
-  echo "$CLASH2_YAML" > $WORK_DIR/subscribe/clash2
+  echo "$CLASH2_YAML" > ${WORK_DIR}/subscribe/clash2
 
   # 生成 ShadowRocket 订阅配置文件
   [ -n "$PORT_XTLS_REALITY" ] && local SHADOWROCKET_SUBSCRIBE+="
@@ -2084,7 +2350,10 @@ vless://$(echo -n auto:${UUID[19]}@${SERVER_IP_2}:${PORT_H2_REALITY} | base64 -w
   [ -n "$PORT_GRPC_REALITY" ] && local SHADOWROCKET_SUBSCRIBE+="
 vless://$(echo -n "auto:${UUID[20]}@${SERVER_IP_2}:${PORT_GRPC_REALITY}" | base64 -w0)?remarks=${NODE_NAME[20]}%20${NODE_TAG[9]}&path=grpc&obfs=grpc&tls=1&peer=${TLS_SERVER[20]}&pbk=${REALITY_PUBLIC[20]}
 "
-  echo -n "$SHADOWROCKET_SUBSCRIBE" | sed -E '/^[ ]*#|^--/d' | sed '/^$/d' | base64 -w0 > $WORK_DIR/subscribe/shadowrocket
+  [ -n "$PORT_ANYTLS" ] && local SHADOWROCKET_SUBSCRIBE+="
+anytls://${UUID[21]}@${SERVER_IP_1}:${PORT_ANYTLS}?insecure=1&udp=1#${NODE_NAME[21]}%20${NODE_TAG[10]}
+"
+  echo -n "$SHADOWROCKET_SUBSCRIBE" | sed -E '/^[ ]*#|^--/d' | sed '/^$/d' | base64 -w0 > ${WORK_DIR}/subscribe/shadowrocket
 
   # 生成 V2rayN 订阅文件
   [ -n "$PORT_XTLS_REALITY" ] && local V2RAYN_SUBSCRIBE+="
@@ -2106,54 +2375,51 @@ tuic://${UUID[13]}:${TUIC_PASSWORD}@${SERVER_IP_1}:${PORT_TUIC}?alpn=h3&congesti
 # $(text 54)
 
 {
-  \"log\":{
-      \"level\":\"warn\"
-  },
-  \"inbounds\":[
-      {
-          \"domain_strategy\":\"\",
-          \"listen\":\"127.0.0.1\",
-          \"listen_port\":${PORT_SHADOWTLS},
-          \"sniff\":true,
-          \"sniff_override_destination\":false,
-          \"tag\": \"ShadowTLS\",
-          \"type\":\"mixed\"
-      }
-  ],
-  \"outbounds\":[
-      {
-          \"detour\":\"shadowtls-out\",
-          \"domain_strategy\":\"\",
-          \"method\":\"$SHADOWTLS_METHOD\",
-          \"password\":\"$SHADOWTLS_PASSWORD\",
-          \"type\":\"shadowsocks\",
-          \"udp_over_tcp\": false,
-          \"multiplex\": {
-            \"enabled\": true,
-            \"protocol\": \"h2mux\",
-            \"max_connections\": 8,
-            \"min_streams\": 16,
-            \"padding\": true
-          }
-      },
-      {
-          \"domain_strategy\":\"\",
-          \"password\":\"${UUID[14]}\",
-          \"server\":\"${SERVER_IP}\",
-          \"server_port\":${PORT_SHADOWTLS},
-          \"tag\": \"shadowtls-out\",
-          \"tls\":{
-              \"enabled\":true,
-              \"server_name\":\"${TLS_SERVER[14]}\",
-              \"utls\": {
-                \"enabled\": true,
-                \"fingerprint\": \"chrome\"
-              }
-          },
-          \"type\":\"shadowtls\",
-          \"version\":3
-      }
-  ]
+    \"log\":{
+        \"level\":\"warn\"
+    },
+    \"inbounds\":[
+        {
+            \"listen\":\"127.0.0.1\",
+            \"listen_port\":${PORT_SHADOWTLS},
+            \"sniff\":true,
+            \"sniff_override_destination\":false,
+            \"tag\": \"${PROTOCOL_LIST[3]}\",
+            \"type\":\"mixed\"
+        }
+    ],
+    \"outbounds\":[
+        {
+            \"detour\":\"shadowtls-out\",
+            \"method\":\"$SHADOWTLS_METHOD\",
+            \"password\":\"$SHADOWTLS_PASSWORD\",
+            \"type\":\"shadowsocks\",
+            \"udp_over_tcp\": false,
+            \"multiplex\": {
+              \"enabled\": true,
+              \"protocol\": \"h2mux\",
+              \"max_connections\": 8,
+              \"min_streams\": 16,
+              \"padding\": true
+            }
+        },
+        {
+            \"password\":\"${UUID[14]}\",
+            \"server\":\"${SERVER_IP}\",
+            \"server_port\":${PORT_SHADOWTLS},
+            \"tag\": \"shadowtls-out\",
+            \"tls\":{
+                \"enabled\":true,
+                \"server_name\":\"${TLS_SERVER[14]}\",
+                \"utls\": {
+                  \"enabled\": true,
+                  \"fingerprint\": \"chrome\"
+                }
+            },
+            \"type\":\"shadowtls\",
+            \"version\":3
+        }
+    ]
 }"
   [ -n "$PORT_SHADOWSOCKS" ] && local V2RAYN_SUBSCRIBE+="
 ----------------------------
@@ -2209,7 +2475,44 @@ vless://${UUID[19]}@${SERVER_IP_1}:${PORT_H2_REALITY}?encryption=none&security=r
 ----------------------------
 vless://${UUID[20]}@${SERVER_IP_1}:${PORT_GRPC_REALITY}?encryption=none&security=reality&sni=${TLS_SERVER[20]}&fp=chrome&pbk=${REALITY_PUBLIC[20]}&type=grpc&serviceName=grpc&mode=gun#${NODE_NAME[20]// /%20}%20${NODE_TAG[9]}"
 
-  echo -n "$V2RAYN_SUBSCRIBE" | sed -E '/^[ ]*#|^[ ]+|^--|^\{|^\}/d' | sed '/^$/d' | base64 -w0 > $WORK_DIR/subscribe/v2rayn
+  [ -n "$PORT_ANYTLS" ] && local V2RAYN_SUBSCRIBE+="
+----------------------------
+# $(text 101)
+
+{
+    \"log\":{
+        \"level\":\"warn\"
+    },
+    \"inbounds\":[
+        {
+            \"listen\":\"127.0.0.1\",
+            \"listen_port\":${PORT_ANYTLS},
+            \"sniff\":true,
+            \"sniff_override_destination\":false,
+            \"tag\": \"${PROTOCOL_LIST[10]}\",
+            \"type\":\"mixed\"
+        }
+    ],
+    \"outbounds\":[
+        {
+            \"type\": \"anytls\",
+            \"tag\": \"${NODE_NAME[21]} ${NODE_TAG[10]}\",
+            \"server\": \"${SERVER_IP}\",
+            \"server_port\": ${PORT_ANYTLS},
+            \"password\": \"${UUID[21]}\",
+            \"idle_session_check_interval\": \"30s\",
+            \"idle_session_timeout\": \"30s\",
+            \"min_idle_session\": 5,
+            \"tls\": {
+              \"enabled\": true,
+              \"insecure\": true,
+              \"server_name\": \"\"
+            }
+        }
+    ]
+}"
+
+  echo -n "$V2RAYN_SUBSCRIBE" | sed -E '/^[ ]*#|^[ ]+|^--|^\{|^\}/d' | sed '/^$/d' | base64 -w0 > ${WORK_DIR}/subscribe/v2rayn
 
   # 生成 NekoBox 订阅文件
   [ -n "$PORT_XTLS_REALITY" ] && local NEKOBOX_SUBSCRIBE+="
@@ -2285,16 +2588,19 @@ vless://${UUID[19]}@${SERVER_IP_1}:${PORT_H2_REALITY}?security=reality&sni=${TLS
 ----------------------------
 vless://${UUID[20]}@${SERVER_IP_1}:${PORT_GRPC_REALITY}?security=reality&sni=${TLS_SERVER[20]}&fp=chrome&pbk=${REALITY_PUBLIC[20]}&type=grpc&serviceName=grpc&encryption=none#${NODE_NAME[20]}%20${NODE_TAG[9]}"
 
-  echo -n "$NEKOBOX_SUBSCRIBE" | sed -E '/^[ ]*#|^--/d' | sed '/^$/d' | base64 -w0 > $WORK_DIR/subscribe/neko
+  echo -n "$NEKOBOX_SUBSCRIBE" | sed -E '/^[ ]*#|^--/d' | sed '/^$/d' | base64 -w0 > ${WORK_DIR}/subscribe/neko
 
   # 生成 Sing-box 订阅文件
   [ -n "$PORT_XTLS_REALITY" ] &&
   local INBOUND_REPLACE+=" { \"type\": \"vless\", \"tag\": \"${NODE_NAME[11]} ${NODE_TAG[0]}\", \"server\":\"${SERVER_IP}\", \"server_port\":${PORT_XTLS_REALITY}, \"uuid\":\"${UUID[11]}\", \"flow\":\"\", \"packet_encoding\":\"xudp\", \"tls\":{ \"enabled\":true, \"server_name\":\"${TLS_SERVER[11]}\", \"utls\":{ \"enabled\":true, \"fingerprint\":\"chrome\" }, \"reality\":{ \"enabled\":true, \"public_key\":\"${REALITY_PUBLIC[11]}\", \"short_id\":\"\" } }, \"multiplex\": { \"enabled\": true, \"protocol\": \"h2mux\", \"max_connections\": 8, \"min_streams\": 16, \"padding\": true, \"brutal\":{ \"enabled\":${IS_BRUTAL}, \"up_mbps\":1000, \"down_mbps\":1000 } } }," &&
   local NODE_REPLACE+="\"${NODE_NAME[11]} ${NODE_TAG[0]}\","
 
-  [ -n "$PORT_HYSTERIA2" ] &&
-  local INBOUND_REPLACE+=" { \"type\": \"hysteria2\", \"tag\": \"${NODE_NAME[12]} ${NODE_TAG[1]}\", \"server\": \"${SERVER_IP}\", \"server_port\": ${PORT_HYSTERIA2}, \"up_mbps\": 200, \"down_mbps\": 1000, \"password\": \"${UUID[12]}\", \"tls\": { \"enabled\": true, \"insecure\": true, \"server_name\": \"\", \"alpn\": [ \"h3\" ] } }," &&
-  local NODE_REPLACE+="\"${NODE_NAME[12]} ${NODE_TAG[1]}\","
+  if [ -n "$PORT_HYSTERIA2" ]; then
+    local INBOUND_REPLACE+=" { \"type\": \"hysteria2\", \"tag\": \"${NODE_NAME[12]} ${NODE_TAG[1]}\", \"server\": \"${SERVER_IP}\", \"server_port\": ${PORT_HYSTERIA2},"
+    [[ -n "${PORT_HOPPING_START}" && -n "${PORT_HOPPING_END}" ]] && local INBOUND_REPLACE+=" \"server_ports\": [ \"${PORT_HOPPING_START}:${PORT_HOPPING_END}\" ],"
+    local INBOUND_REPLACE+=" \"up_mbps\": 200, \"down_mbps\": 1000, \"password\": \"${UUID[12]}\", \"tls\": { \"enabled\": true, \"insecure\": true, \"server_name\": \"\", \"alpn\": [ \"h3\" ] } },"
+    local NODE_REPLACE+="\"${NODE_NAME[12]} ${NODE_TAG[1]}\","
+  fi
 
   [ -n "$PORT_TUIC" ] &&
   local TUIC_INBOUND=" { \"type\": \"tuic\", \"tag\": \"${NODE_NAME[13]} ${NODE_TAG[2]}\", \"server\": \"${SERVER_IP}\", \"server_port\": ${PORT_TUIC}, \"uuid\": \"${UUID[13]}\", \"password\": \"${TUIC_PASSWORD}\", \"congestion_control\": \"$TUIC_CONGESTION_CONTROL\", \"udp_relay_mode\": \"native\", \"zero_rtt_handshake\": false, \"heartbeat\": \"10s\", \"tls\": { \"enabled\": true, \"insecure\": true, \"server_name\": \"\", \"alpn\": [ \"h3\" ] } }," &&
@@ -2356,17 +2662,21 @@ vless://${UUID[20]}@${SERVER_IP_1}:${PORT_GRPC_REALITY}?security=reality&sni=${T
   local INBOUND_REPLACE+=" { \"type\": \"vless\", \"tag\": \"${NODE_NAME[20]} ${NODE_TAG[9]}\", \"server\": \"${SERVER_IP}\", \"server_port\": ${PORT_GRPC_REALITY}, \"uuid\":\"${UUID[20]}\", \"tls\": { \"enabled\":true, \"server_name\":\"${TLS_SERVER[20]}\", \"utls\": { \"enabled\":true, \"fingerprint\":\"chrome\" }, \"reality\":{ \"enabled\":true, \"public_key\":\"${REALITY_PUBLIC[20]}\", \"short_id\":\"\" } }, \"packet_encoding\": \"xudp\", \"transport\": { \"type\": \"grpc\", \"service_name\": \"grpc\" } }," &&
   local NODE_REPLACE+="\"${NODE_NAME[20]} ${NODE_TAG[9]}\","
 
+  [ -n "$PORT_ANYTLS" ] &&
+  local INBOUND_REPLACE+=" { \"type\": \"anytls\", \"tag\": \"${NODE_NAME[21]} ${NODE_TAG[10]}\", \"server\": \"${SERVER_IP}\", \"server_port\": ${PORT_ANYTLS}, \"password\": \"${UUID[21]}\", \"idle_session_check_interval\": \"30s\", \"idle_session_timeout\": \"30s\", \"min_idle_session\": 5, \"tls\": { \"enabled\": true, \"insecure\": true, \"server_name\": \"\" } }," &&
+  local NODE_REPLACE+="\"${NODE_NAME[21]} ${NODE_TAG[10]}\","
+
   # 模板1
   local SING_BOX_JSON1=$(wget --no-check-certificate -qO- --tries=3 --timeout=2 ${GH_PROXY}${SUBSCRIBE_TEMPLATE}/sing-box1)
-  echo $SING_BOX_JSON1 | sed 's#, {[^}]\+"tun-in"[^}]\+}##' | sed "s#\"<INBOUND_REPLACE>\",#$INBOUND_REPLACE#; s#\"<NODE_REPLACE>\"#${NODE_REPLACE%,}#g" | $WORK_DIR/jq > $WORK_DIR/subscribe/sing-box-pc
-  echo $SING_BOX_JSON1 | sed 's# {[^}]\+"mixed"[^}]\+},##; s#, "auto_detect_interface": true##' | sed "s#\"<INBOUND_REPLACE>\",#$INBOUND_REPLACE#; s#\"<NODE_REPLACE>\"#${NODE_REPLACE%,}#g" | $WORK_DIR/jq > $WORK_DIR/subscribe/sing-box-phone
+  echo $SING_BOX_JSON1 | sed 's#, {[^}]\+"tun-in"[^}]\+}##' | sed "s#\"<INBOUND_REPLACE>\",#$INBOUND_REPLACE#; s#\"<NODE_REPLACE>\"#${NODE_REPLACE%,}#g" | ${WORK_DIR}/jq > ${WORK_DIR}/subscribe/sing-box-pc
+  echo $SING_BOX_JSON1 | sed 's# {[^}]\+"mixed"[^}]\+},##; s#, "auto_detect_interface": true##' | sed "s#\"<INBOUND_REPLACE>\",#$INBOUND_REPLACE#; s#\"<NODE_REPLACE>\"#${NODE_REPLACE%,}#g" | ${WORK_DIR}/jq > ${WORK_DIR}/subscribe/sing-box-phone
 
   # 模板2
   local SING_BOX_JSON2=$(wget --no-check-certificate -qO- --tries=3 --timeout=2 ${GH_PROXY}${SUBSCRIBE_TEMPLATE}/sing-box2)
-  echo $SING_BOX_JSON2 | sed "s#\"<INBOUND_REPLACE>\",#$INBOUND_REPLACE#; s#\"<NODE_REPLACE>\"#${NODE_REPLACE%,}#g" | $WORK_DIR/jq > $WORK_DIR/subscribe/sing-box2
+  echo $SING_BOX_JSON2 | sed "s#\"<INBOUND_REPLACE>\",#$INBOUND_REPLACE#; s#\"<NODE_REPLACE>\"#${NODE_REPLACE%,}#g" | ${WORK_DIR}/jq > ${WORK_DIR}/subscribe/sing-box2
 
   # 生成二维码 url 文件
-  [ "$IS_SUB" = 'is_sub' ] && cat > $WORK_DIR/subscribe/qr << EOF
+  [ "$IS_SUB" = 'is_sub' ] && cat > ${WORK_DIR}/subscribe/qr << EOF
 $(text 81):
 $(text 82) 1:
 $SUBSCRIBE_ADDRESS/${UUID_CONFIRM}/auto
@@ -2382,10 +2692,10 @@ $(text 82) 2:
 https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=$SUBSCRIBE_ADDRESS/${UUID_CONFIRM}/auto2
 
 $(text 82) 1:
-$($WORK_DIR/qrencode "$SUBSCRIBE_ADDRESS/${UUID_CONFIRM}/auto")
+$(${WORK_DIR}/qrencode "$SUBSCRIBE_ADDRESS/${UUID_CONFIRM}/auto")
 
 $(text 82) 2:
-$($WORK_DIR/qrencode "$SUBSCRIBE_ADDRESS/${UUID_CONFIRM}/auto2")
+$(${WORK_DIR}/qrencode "$SUBSCRIBE_ADDRESS/${UUID_CONFIRM}/auto2")
 EOF
 
   # 生成配置文件
@@ -2409,7 +2719,7 @@ $(hint "${SHADOWROCKET_SUBSCRIBE}")
 *******************************************
 ┌────────────────┐
 │                │
-│   $(warning "Clash Meta")   │
+│   $(warning "Clash Verge")  │
 │                │
 └────────────────┘
 ----------------------------
@@ -2432,7 +2742,7 @@ $(hint "${NEKOBOX_SUBSCRIBE}")
 └────────────────┘
 ----------------------------
 
-$(info "$(echo "{ \"outbounds\":[ ${INBOUND_REPLACE%,} ] }" | $WORK_DIR/jq)
+$(info "$(echo "{ \"outbounds\":[ ${INBOUND_REPLACE%,} ] }" | ${WORK_DIR}/jq)
 
 ${PROMPT}
 
@@ -2488,41 +2798,41 @@ $(text 82) 2:
 https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=$SUBSCRIBE_ADDRESS/${UUID_CONFIRM}/auto2")
 
 $(hint "$(text 82) 1:")
-$($WORK_DIR/qrencode $SUBSCRIBE_ADDRESS/${UUID_CONFIRM}/auto)
+$(${WORK_DIR}/qrencode $SUBSCRIBE_ADDRESS/${UUID_CONFIRM}/auto)
 
 $(hint "$(text 82) 2:")
-$($WORK_DIR/qrencode $SUBSCRIBE_ADDRESS/${UUID_CONFIRM}/auto2)
+$(${WORK_DIR}/qrencode $SUBSCRIBE_ADDRESS/${UUID_CONFIRM}/auto2)
 "
 
   # 生成并显示节点信息
-  echo "$EXPORT_LIST_FILE" > $WORK_DIR/list
-  cat $WORK_DIR/list
+  echo "$EXPORT_LIST_FILE" > ${WORK_DIR}/list
+  cat ${WORK_DIR}/list
 
   # 显示脚本使用情况数据
-  hint "\n*******************************************\n\n $(text 55) \n"
+  statistics_of_run-times get
 }
 
 # 创建快捷方式
 create_shortcut() {
-  cat > $WORK_DIR/sb.sh << EOF
+  cat > ${WORK_DIR}/sb.sh << EOF
 #!/usr/bin/env bash
 
 bash <(wget --no-check-certificate -qO- https://raw.githubusercontent.com/fscarmen/sing-box/main/sing-box.sh) \$1
 EOF
-  chmod +x $WORK_DIR/sb.sh
-  ln -sf $WORK_DIR/sb.sh /usr/bin/sb
+  chmod +x ${WORK_DIR}/sb.sh
+  ln -sf ${WORK_DIR}/sb.sh /usr/bin/sb
   [ -s /usr/bin/sb ] && info "\n $(text 71) "
 }
 
 # 更换各协议的监听端口
 change_start_port() {
-  OLD_PORTS=$(awk -F ':|,' '/listen_port/{print $2}' $WORK_DIR/conf/*)
+  OLD_PORTS=$(awk -F ':|,' '/listen_port/{print $2}' ${WORK_DIR}/conf/*)
   OLD_START_PORT=$(awk 'NR == 1 { min = $0 } { if ($0 < min) min = $0; count++ } END {print min}' <<< "$OLD_PORTS")
   OLD_CONSECUTIVE_PORTS=$(awk 'END { print NR }' <<< "$OLD_PORTS")
   input_start_port $OLD_CONSECUTIVE_PORTS
   cmd_systemctl disable sing-box
   for ((a=0; a<$OLD_CONSECUTIVE_PORTS; a++)) do
-    [ -s $WORK_DIR/conf/${CONF_FILES[a]} ] && sed -i "s/\(.*listen_port.*:\)$((OLD_START_PORT+a))/\1$((START_PORT+a))/" $WORK_DIR/conf/*
+    [ -s ${WORK_DIR}/conf/${CONF_FILES[a]} ] && sed -i "s/\(.*listen_port.*:\)$((OLD_START_PORT+a))/\1$((START_PORT+a))/" ${WORK_DIR}/conf/*
   done
   fetch_nodes_value
   [ -n "$PORT_NGINX" ] && export_nginx_conf_file
@@ -2539,7 +2849,7 @@ change_protocols() {
   [ "${STATUS[0]}" = "$(text 26)" ] && error "\n Sing-box $(text 26) "
 
   # 查找已安装的协议，并遍历其在所有协议列表中的名称，获取协议名后存放在 EXISTED_PROTOCOLS; 没有的协议存放在 NOT_EXISTED_PROTOCOLS
-  INSTALLED_PROTOCOLS_LIST=$(awk -F '"' '/"tag":/{print $4}' $WORK_DIR/conf/*_inbounds.json | grep -v 'shadowtls-in' | awk '{print $NF}')
+  INSTALLED_PROTOCOLS_LIST=$(awk -F '"' '/"tag":/{print $4}' ${WORK_DIR}/conf/*_inbounds.json | grep -v 'shadowtls-in' | awk '{print $NF}')
   for f in ${!NODE_TAG[@]}; do [[ $INSTALLED_PROTOCOLS_LIST =~ "${NODE_TAG[f]}" ]] && EXISTED_PROTOCOLS+=("${PROTOCOL_LIST[f]}") || NOT_EXISTED_PROTOCOLS+=("${PROTOCOL_LIST[f]}"); done
 
   # 列出已安装协议
@@ -2626,13 +2936,13 @@ change_protocols() {
 
   # 删除不需要的协议配置文件
   [ "${#REMOVE_FILE[@]}" -gt 0 ] && for t in "${REMOVE_FILE[@]}"; do
-    rm -f $WORK_DIR/conf/*${t}
+    rm -f ${WORK_DIR}/conf/*${t}
   done
 
   # 寻找已存在协议中原有的端口号
   for p in "${KEEP_PROTOCOLS[@]}"; do
     for u in "${!PROTOCOL_LIST[@]}"; do
-      [ "$p" = "${PROTOCOL_LIST[u]}" ] && KEEP_PORTS+=("$(awk -F '[:,]' '/listen_port/{print $2}' $WORK_DIR/conf/*${NODE_TAG[u]}_inbounds.json)")
+      [ "$p" = "${PROTOCOL_LIST[u]}" ] && KEEP_PORTS+=("$(awk -F '[:,]' '/listen_port/{print $2}' ${WORK_DIR}/conf/*${NODE_TAG[u]}_inbounds.json)")
     done
   done
 
@@ -2698,10 +3008,10 @@ change_protocols() {
   fi
 
   # 获取 ws 的 argo 或者 origin 状态
-  if [ -s /etc/systemd/system/argo.service ]; then
+  if [[ -s /etc/systemd/system/argo.service || -s /etc/init.d/argo ]]; then
     local ARGO_ORIGIN_RULES_STATUS=is_argo
     ARGO_RUNS=$(sed -n "s/^ExecStart=\(.*\)/\1/gp" /etc/systemd/system/argo.service)
-  elif ls $WORK_DIR/conf/*-ws*inbounds.json >/dev/null 2>&1; then
+  elif ls ${WORK_DIR}/conf/*-ws*inbounds.json >/dev/null 2>&1; then
     local ARGO_ORIGIN_RULES_STATUS=is_origin
   else
     local ARGO_ORIGIN_RULES_STATUS=no_argo_no_origin
@@ -2798,6 +3108,15 @@ change_protocols() {
     unset PORT_GRPC_REALITY
   fi
 
+  # 获取 anytls 端口
+  CHECK_PROTOCOLS=$(asc "$CHECK_PROTOCOLS" ++)
+  if [[ "${INSTALL_PROTOCOLS[@]}" =~ "$CHECK_PROTOCOLS" ]]; then
+    POSITION=$(awk -v target=$CHECK_PROTOCOLS '{ for(i=1; i<=NF; i++) if($i == target) { print i-1; break } }' <<< "${INSTALL_PROTOCOLS[*]}")
+    PORT_ANYTLS=${REINSTALL_PORTS[POSITION]}
+  else
+    unset PORT_ANYTLS
+  fi
+
   # 停止 sing-box 服务
   cmd_systemctl disable sing-box
 
@@ -2808,64 +3127,78 @@ change_protocols() {
   sing-box_json change
 
   # 如有需要，安装和删除 Argo 服务
-  if ls $WORK_DIR/conf/*-ws*inbounds.json >/dev/null 2>&1; then
+  if ls ${WORK_DIR}/conf/*-ws*inbounds.json >/dev/null 2>&1; then
     if [[ "$ARGO_OR_ORIGIN_RULES" != '2' && "$ARGO_ORIGIN_RULES_STATUS" != 'is_origin' && ! -s /etc/systemd/system/argo.service ]]; then
       argo_systemd
       cmd_systemctl enable argo >/dev/null 2>&1
     fi
-  elif [ -s /etc/systemd/system/argo.service ]; then
+  elif [[ -s /etc/systemd/system/argo.service || -s /etc/init.d/argo ]]; then
     cmd_systemctl disable argo >/dev/null 2>&1
     rm -f /etc/systemd/system/argo.service
-    [ -s $WORK_DIR/tunnel.json ] && rm -f $WORK_DIR/tunnel.*
+    [ -s ${WORK_DIR}/tunnel.json ] && rm -f ${WORK_DIR}/tunnel.*
   fi
 
   # 如有需要，删除 nginx 配置文件
-  ! ls /etc/systemd/system/argo.service >/dev/null 2>&1 && [[ -s $WORK_DIR/nginx.conf && "$IS_SUB" = 'no_sub' ]] && IS_ARGO=no_argo && rm -f $WORK_DIR/nginx.conf
+  ! ls /etc/systemd/system/argo.service >/dev/null 2>&1 && [[ -s ${WORK_DIR}/nginx.conf && "$IS_SUB" = 'no_sub' ]] && IS_ARGO=no_argo && rm -f ${WORK_DIR}/nginx.conf
 
   # 运行 sing-box
   cmd_systemctl enable sing-box
 
+  # 等待服务启动
+  sleep 3
+
   # 再次检测状态，运行 sing-box
   check_install
+  case "${STATUS[0]}" in
+    "$(text 26)" )
+      error "\n Sing-box $(text 28) $(text 38) \n"
+      ;;
+    "$(text 27)" )
+      cmd_systemctl enable sing-box
+      cmd_systemctl status sing-box &>/dev/null && info "\n Sing-box $(text 28) $(text 37) \n" || error "\n Sing-box $(text 28) $(text 38) \n"
+      ;;
+    "$(text 28)" )
+      info "\n Sing-box $(text 28) $(text 37) \n"
+  esac
 
-  check_sing-box_status
-
+  # 导出节点和订阅服务信息
   export_list
 }
 
 # 卸载 sing-box 全家桶
 uninstall() {
-  if [ -d $WORK_DIR ]; then
-    [ -s /etc/systemd/system/argo.service ] && ( cmd_systemctl disable argo 2>/dev/null; rm -f /etc/systemd/system/argo.service )
+  if [ -d ${WORK_DIR} ]; then
+    [[ -s /etc/systemd/system/argo.service || -s /etc/init.d/argo ]] && ( cmd_systemctl disable argo &>/dev/null; rm -f /etc/systemd/system/argo.service )
     if [ "$SYSTEM" = 'Alpine' ]; then
-      cmd_systemctl disable sing-box 2>/dev/null
+      [ -s /etc/init.d/sing-box ] && ( rc-service sing-box stop &>/dev/null; rc-update del sing-box default &>/dev/null; rm -f /etc/init.d/sing-box )
+      [ -s /etc/init.d/argo ] && ( rc-service argo stop &>/dev/null; rc-update del argo default &>/dev/null; rm -f /etc/init.d/argo )
     else
-      cmd_systemctl disable sing-box 2>/dev/null
+      cmd_systemctl disable sing-box &>/dev/null
     fi
     sleep 1
-    [[ -s $WORK_DIR/nginx.conf && $(ps -ef | grep 'nginx' | wc -l) -le 1 ]] && reading "\n $(text 83) " REMOVE_NGINX
+    [[ -s ${WORK_DIR}/nginx.conf && $(ps -ef | grep 'nginx' | wc -l) -le 1 ]] && reading "\n $(text 83) " REMOVE_NGINX
     [ "${REMOVE_NGINX,,}" = 'y' ] && ${PACKAGE_UNINSTALL[int]} nginx >/dev/null 2>&1
     [ "$IS_HOPPING" = 'is_hopping' ] && del_port_hopping_nat
-    rm -rf $WORK_DIR $TEMP_DIR /etc/systemd/system/sing-box.service /usr/bin/sb
+    rm -rf ${WORK_DIR} $TEMP_DIR /etc/systemd/system/sing-box.service /usr/bin/sb
     info "\n $(text 16) \n"
   else
     error "\n $(text 15) \n"
-  fi
-
-  # 如果 Alpine 系统，删除开机自启动和python3版systemd
-  if [ "$SYSTEM" = 'Alpine' ]; then
-    rm -f /etc/local.d/{sing-box,argo}.start
-    rc-update add local >/dev/null 2>&1
-    ! ls /etc/systemd/system/*.service >/dev/null 2>&1 && rm -f /bin/systemctl
   fi
 }
 
 # Sing-box 的最新版本
 version() {
-  local VERSION_LATEST=$(wget --no-check-certificate -qO- ${GH_PROXY}https://api.github.com/repos/SagerNet/sing-box/releases | awk -F '["v-]' '/tag_name/{print $5}' | sort -Vr | sed -n '1p')
-  #####local ONLINE=$(wget --no-check-certificate -qO- ${GH_PROXY}https://api.github.com/repos/SagerNet/sing-box/releases | awk -F '["v]' -v var="tag_name.*$VERSION_LATEST" '$0 ~ var {print $5; exit}')
-  local ONLINE='1.11.0-alpha.6'
-  local LOCAL=$($WORK_DIR/sing-box version | awk '/version/{print $NF}')
+  # FORCE_VERSION 用于在 sing-box 某个主程序出现 bug 时，强制为指定版本，以防止运行出错
+  local FORCE_VERSION=$(wget --no-check-certificate --tries=2 --timeout=3 -qO- ${GH_PROXY}https://raw.githubusercontent.com/fscarmen/sing-box/refs/heads/main/force_version | sed 's/^[vV]//g')
+  if grep -q '.' <<< "$FORCE_VERSION"; then
+    local ONLINE="$FORCE_VERSION"
+  else
+    local VERSION_LATEST=$(wget --no-check-certificate --tries=2 --timeout=3 -qO- ${GH_PROXY}https://api.github.com/repos/SagerNet/sing-box/releases | awk -F '["v-]' '/tag_name/{print $5}' | sort -Vr | sed -n '1p')
+    local ONLINE=$(wget --no-check-certificate --tries=2 --timeout=3 -qO- ${GH_PROXY}https://api.github.com/repos/SagerNet/sing-box/releases | awk -F '["v]' -v var="tag_name.*$VERSION_LATEST" '$0 ~ var {print $5; exit}')
+  fi
+
+  grep -q '.' <<< "$ONLINE" || error " $(text 100) \n"
+  local LOCAL=$(${WORK_DIR}/sing-box version | awk '/version/{print $NF}')
   info "\n $(text 40) "
   [[ -n "$ONLINE" && "$ONLINE" != "$LOCAL" ]] && reading "\n $(text 9) " UPDATE || info " $(text 41) "
 
@@ -2875,8 +3208,34 @@ version() {
 
     if [ -s $TEMP_DIR/sing-box-$ONLINE-linux-$SING_BOX_ARCH/sing-box ]; then
       cmd_systemctl disable sing-box
-      chmod +x $TEMP_DIR/sing-box-$ONLINE-linux-$SING_BOX_ARCH/sing-box && mv $TEMP_DIR/sing-box-$ONLINE-linux-$SING_BOX_ARCH/sing-box $WORK_DIR/sing-box
-      cmd_systemctl enable sing-box && sleep 2 && [ "$(systemctl is-active sing-box)" = 'active' ] && info "\n Sing-box $(text 28) $(text 37) \n" || error "\n Sing-box $(text 28) $(text 38) \n"
+
+      # 备份旧版本
+      cp ${WORK_DIR}/sing-box ${WORK_DIR}/sing-box.bak
+      hint "\n $(text 102) \n"
+
+      # 安装新版本
+      chmod +x $TEMP_DIR/sing-box-$ONLINE-linux-$SING_BOX_ARCH/sing-box && mv $TEMP_DIR/sing-box-$ONLINE-linux-$SING_BOX_ARCH/sing-box ${WORK_DIR}/sing-box
+      cmd_systemctl enable sing-box
+      sleep 2
+
+      # 检查新版本是否成功运行
+      if cmd_systemctl status sing-box &>/dev/null; then
+        # 新版本运行成功，删除备份
+        rm -f ${WORK_DIR}/sing-box.bak
+        info "\n $(text 103) \n"
+      else
+        # 新版本运行失败，恢复旧版本
+        warning "\n $(text 104) \n"
+        mv ${WORK_DIR}/sing-box.bak ${WORK_DIR}/sing-box
+        cmd_systemctl enable sing-box
+        sleep 2
+
+        if cmd_systemctl status sing-box &>/dev/null; then
+          info "\n $(text 105) \n"
+        else
+          error "\n $(text 106) \n"
+        fi
+      fi
     else
       error "\n $(text 42) "
     fi
@@ -2888,29 +3247,29 @@ menu_setting() {
   if [[ "${STATUS[0]}" =~ $(text 27)|$(text 28) ]]; then
     # 查 argo 进程号，运行时长和内存占用
     if [[ "${STATUS[1]}" =~ $(text 27)|$(text 28) ]]; then
-      ARGO_VERSION=$($WORK_DIR/cloudflared -v | awk '{print $3}' | sed "s@^@Version: &@g")
+      ARGO_VERSION=$(${WORK_DIR}/cloudflared -v | awk '{print $3}' | sed "s@^@Version: &@g")
       if [ "${STATUS[1]}" = "$(text 28)" ]; then
-        [ "$SYSTEM" = 'Alpine' ] && ARGO_PID=$(ps -ef | awk -v WORK_DIR="$WORK_DIR" '$0 ~ WORK_DIR"/cloudflared" {print $1}') || ARGO_PID=$(ps -ef | awk -v WORK_DIR="$WORK_DIR" '$0 ~ WORK_DIR"/cloudflared" {print $2}')
+        [ "$SYSTEM" = 'Alpine' ] && ARGO_PID=$(ps -ef | awk -v WORK_DIR="${WORK_DIR}" '$0 ~ WORK_DIR"/cloudflared" {print $1}') || ARGO_PID=$(ps -ef | awk -v WORK_DIR="${WORK_DIR}" '$0 ~ WORK_DIR"/cloudflared" {print $2}')
         [[ "$ARGO_PID" =~ ^[0-9]+$ ]] && ARGO_MEMORY_USAGE="$(text 58): $(awk '/VmRSS/{printf "%.1f\n", $2/1024}' /proc/$ARGO_PID/status) MB"
       fi
     fi
 
     # 查 sing-box 进程号，运行时长和内存占用
     if [ "${STATUS[0]}" = "$(text 28)" ]; then
-      [ "$SYSTEM" = 'Alpine' ] && SING_BOX_PID=$(ps -ef | awk -v WORK_DIR="$WORK_DIR" '$0 ~ WORK_DIR"/sing-box" {print $1}') || SING_BOX_PID=$(ps -ef | awk -v WORK_DIR="$WORK_DIR" '$0 ~ WORK_DIR"/sing-box" {print $2}')
+      [ "$SYSTEM" = 'Alpine' ] && SING_BOX_PID=$(ps -ef | awk -v WORK_DIR="${WORK_DIR}" '$0 ~ WORK_DIR"/sing-box" {print $1}') || SING_BOX_PID=$(ps -ef | awk -v WORK_DIR="${WORK_DIR}" '$0 ~ WORK_DIR"/sing-box" {print $2}')
       [[ "$SING_BOX_PID" =~ ^[0-9]+$ ]] && SING_BOX_MEMORY_USAGE="$(text 58): $(awk '/VmRSS/{printf "%.1f\n", $2/1024}' /proc/$SING_BOX_PID/status) MB"
     fi
 
     # 查 Nginx 版本号
     [ -x "$(type -p nginx)" ] && NGINX_VERSION=$(nginx -v 2>&1 | sed "s#.*/#Version: #")
-    [ "$SYSTEM" = 'Alpine' ] && NGINX_PID=$(ps -ef | awk -v WORK_DIR="$WORK_DIR" '$0 ~ WORK_DIR"/nginx.conf" {print $1; exit}') || NGINX_PID=$(ps -ef | awk -v WORK_DIR="$WORK_DIR" '$0 ~ WORK_DIR"/nginx.conf" {print $2; exit}')
+    [ "$SYSTEM" = 'Alpine' ] && NGINX_PID=$(ps -ef | awk -v WORK_DIR="${WORK_DIR}" '$0 ~ WORK_DIR"/nginx.conf" {print $1; exit}') || NGINX_PID=$(ps -ef | awk -v WORK_DIR="${WORK_DIR}" '$0 ~ WORK_DIR"/nginx.conf" {print $2; exit}')
     [[ "$NGINX_PID" =~ ^[0-9]+$ ]] && NGINX_MEMORY_USAGE="$(text 58): $(awk '/VmRSS/{printf "%.1f\n", $2/1024}' /proc/$NGINX_PID/status) MB"
 
-    NOW_PORTS=$(awk -F ':|,' '/listen_port/{print $2}' $WORK_DIR/conf/*)
+    NOW_PORTS=$(awk -F ':|,' '/listen_port/{print $2}' ${WORK_DIR}/conf/*)
     NOW_START_PORT=$(awk 'NR == 1 { min = $0 } { if ($0 < min) min = $0; count++ } END {print min}' <<< "$NOW_PORTS")
     NOW_CONSECUTIVE_PORTS=$(awk 'END { print NR }' <<< "$NOW_PORTS")
-    [ -s $WORK_DIR/sing-box ] && SING_BOX_VERSION="Version: $($WORK_DIR/sing-box version | awk '/version/{print $NF}')"
-    [ -s $WORK_DIR/conf/02_route.json ] && { grep -q 'direct' $WORK_DIR/conf/02_route.json && RETURN_STATUS=$(text 27) || RETURN_STATUS=$(text 28); }
+    [ -s ${WORK_DIR}/sing-box ] && SING_BOX_VERSION="Version: $(${WORK_DIR}/sing-box version | awk '/version/{print $NF}')"
+    [ -s ${WORK_DIR}/conf/02_route.json ] && { grep -q 'direct' ${WORK_DIR}/conf/02_route.json && RETURN_STATUS=$(text 27) || RETURN_STATUS=$(text 28); }
     OPTION[1]="1 .  $(text 29)"
     [ "${STATUS[0]}" = "$(text 28)" ] && OPTION[2]="2 .  $(text 27) Sing-box (sb -s)" || OPTION[2]="2 .  $(text 28) Sing-box (sb -s)"
     [ "${STATUS[1]}" = "$(text 28)" ] && OPTION[3]="3 .  $(text 27) Argo (sb -a)" || OPTION[3]="3 .  $(text 28) Argo (sb -a)"
@@ -2925,8 +3284,60 @@ menu_setting() {
     OPTION[12]="12.  $(text 76)"
 
     ACTION[1]() { export_list; exit 0; }
-    [ "${STATUS[0]}" = "$(text 28)" ] && ACTION[2]() { cmd_systemctl disable sing-box; [[ "$(systemctl is-active sing-box)" =~ 'inactive'|'unknown' ]] && info " Sing-box $(text 27) $(text 37)" || error " Sing-box $(text 27) $(text 38) "; } || ACTION[2]() { cmd_systemctl enable sing-box && [ "$(systemctl is-active sing-box)" = 'active' ] && info " Sing-box $(text 28) $(text 37)" || error " Sing-box $(text 28) $(text 38) "; }
-    [ "${STATUS[1]}" = "$(text 28)" ] && ACTION[3]() { cmd_systemctl disable argo; [[ "$(systemctl is-active argo)" =~ 'inactive'|'unknown' ]] && info " Argo $(text 27) $(text 37)" || error " Argo $(text 27) $(text 38) "; } || ACTION[3]() { cmd_systemctl enable argo && sleep 2 && [ "$(systemctl is-active argo)" = 'active' ] && info " Argo $(text 28) $(text 37)" && ( grep -q '\--url' /etc/systemd/system/argo.service && fetch_quicktunnel_domain && export_list ) || error " Argo $(text 28) $(text 38) "; }
+
+    if [ "$SYSTEM" = 'Alpine' ]; then
+      # Alpine 系统使用 OpenRC 命令检查服务状态
+      [ "${STATUS[0]}" = "$(text 28)" ] && ACTION[2]() {
+        cmd_systemctl disable sing-box
+        cmd_systemctl status sing-box &>/dev/null || info " Sing-box $(text 27) $(text 37)" || error " Sing-box $(text 27) $(text 38) "
+      } || ACTION[2]() {
+        cmd_systemctl enable sing-box
+        sleep 2
+        cmd_systemctl status sing-box &>/dev/null && info " Sing-box $(text 28) $(text 37)" || error " Sing-box $(text 28) $(text 38) "
+      }
+
+      [ "${STATUS[1]}" = "$(text 28)" ] && ACTION[3]() {
+        cmd_systemctl disable argo
+        cmd_systemctl status argo &>/dev/null || info " Argo $(text 27) $(text 37)" || error " Argo $(text 27) $(text 38) "
+      } || ACTION[3]() {
+        cmd_systemctl enable argo
+        sleep 2
+        if cmd_systemctl status argo &>/dev/null; then
+          info " Argo $(text 28) $(text 37)"
+          # 根据系统类型检查不同的配置文件
+          if [ "$SYSTEM" = 'Alpine' ]; then
+            grep -q '\--url' /etc/init.d/argo && fetch_quicktunnel_domain && export_list
+          else
+            grep -q '\--url' /etc/systemd/system/argo.service && fetch_quicktunnel_domain && export_list
+          fi
+        else
+          error " Argo $(text 28) $(text 38) "
+        fi
+      }
+    else
+      # 非 Alpine 系统使用 systemd 命令
+      [ "${STATUS[0]}" = "$(text 28)" ] && ACTION[2]() {
+        cmd_systemctl disable sing-box
+        [[ "$(systemctl is-active sing-box)" =~ 'inactive'|'unknown' ]] && info " Sing-box $(text 27) $(text 37)" || error " Sing-box $(text 27) $(text 38) "
+      } || ACTION[2]() {
+        cmd_systemctl enable sing-box
+        [ "$(systemctl is-active sing-box)" = 'active' ] && info " Sing-box $(text 28) $(text 37)" || error " Sing-box $(text 28) $(text 38) "
+      }
+
+      [ "${STATUS[1]}" = "$(text 28)" ] && ACTION[3]() {
+        cmd_systemctl disable argo
+        [[ "$(systemctl is-active argo)" =~ 'inactive'|'unknown' ]] && info " Argo $(text 27) $(text 37)" || error " Argo $(text 27) $(text 38) "
+      } || ACTION[3]() {
+        cmd_systemctl enable argo
+        sleep 2
+        if [ "$(systemctl is-active argo)" = 'active' ]; then
+          info " Argo $(text 28) $(text 37)"
+          grep -q '\--url' /etc/systemd/system/argo.service && fetch_quicktunnel_domain && export_list
+        else
+          error " Argo $(text 28) $(text 38) "
+        fi
+      }
+    fi
     ACTION[4]() { change_argo; exit; }
     ACTION[5]() { change_start_port; exit; }
     ACTION[6]() { version; exit; }
@@ -2980,11 +3391,21 @@ menu() {
 }
 
 check_cdn
-statistics_of_run-times
+statistics_of_run-times update sing-box.sh
 
 # 传参
 [[ "${*^^}" =~ '-E' ]] && L=E
 [[ "${*^^}" =~ '-C'|'-B' ]] && L=C
+
+# 获取 -F 参数的值
+CONFIG_FILE=$(awk '-F[ =]' 'tolower($1) ~ /^-f$/{print $2}' <<< "$*")
+if [[ -n "$CONFIG_FILE" && -s "$CONFIG_FILE" ]]; then
+  NONINTERACTIVE_INSTALL=noninteractive_install
+  . $CONFIG_FILE
+  L=${LANGUAGE^^}
+  [ "$ARGO" = 'true' ] && IS_ARGO=is_argo || IS_ARGO=no_argo
+  [ "$SUBSCRIBE" = 'true' ] && IS_SUB=is_sub || IS_SUB=no_sub
+fi
 
 select_language
 check_system_info
@@ -2993,7 +3414,7 @@ check_brutal
 # 可以是 Key Value 或者 Key=Value 的形式。传参时，
 # 传参处理1: 把所有的 = 变为空格，但保留 =" ，因为 Json TunnelSecret 是 =" 结尾的，如 {"AccountTag":"9cc9e3e4d8f29d2a02e297f14f20513a","TunnelSecret":"6AYfKBOoNlPiTAuWg64ZwujsNuERpWLm6pPJ2qpN8PM=","TunnelID":"1ac55430-f4dc-47d5-a850-bdce824c4101"}
 # 传参处理2: 去掉 sudo cloudflared service install ，以方便用户输入 Token 并能正确读取真正的以 ey 开头的 Value
-ALL_PARAMETER=($(sed -E 's/(-c|-e|-C|-E) //; s/=([^"])/ \1/g; s/sudo cloudflared service install //' <<< $*))
+ALL_PARAMETER=($(sed -E 's/(-c|-e|-f|-C|-E|-F) //; s/=([^"])/ \1/g; s/sudo cloudflared service install //' <<< $*))
 [[ "${#ALL_PARAMETER[@]}" > 13 && "${ALL_PARAMETER[@]^^}" == *"--LANGUAGE"* && "${ALL_PARAMETER[@]^^}" == *"--CHOOSE_PROTOCOLS"* && "${ALL_PARAMETER[@]^^}" == *"--START_PORT"* && "${ALL_PARAMETER[@]^^}" == *"--PORT_NGINX"* && "${ALL_PARAMETER[@]^^}" == *"--SERVER_IP"* && "${ALL_PARAMETER[@]^^}" == *"--UUID"* && "${ALL_PARAMETER[@]^^}" == *"--NODE_NAME"* ]] && NONINTERACTIVE_INSTALL=noninteractive_install
 
 # 传参处理，无交互快速安装参数
@@ -3004,14 +3425,19 @@ for z in ${!ALL_PARAMETER[@]}; do
       ;;
     -S )
       check_install
-      if [ "${STATUS[0]}" = "$(text 26)" ];then
+      if [ "${STATUS[0]}" = "$(text 26)" ]; then
         error "\n Sing-box $(text 26) "
       elif [ "${STATUS[0]}" = "$(text 28)" ]; then
         cmd_systemctl disable sing-box
-        [[ "$(systemctl is-active sing-box)" =~ 'inactive'|'unknown' ]] && info "\n Sing-box $(text 27) $(text 37)"
+        cmd_systemctl status sing-box &>/dev/null || info "\n Sing-box $(text 27) $(text 37)"
       elif [ "${STATUS[0]}" = "$(text 27)" ]; then
         cmd_systemctl enable sing-box
-        [ "$(systemctl is-active sing-box)" = 'active' ] && info "\n Sing-box $(text 28) $(text 37)"
+        sleep 2
+        if cmd_systemctl status sing-box &>/dev/null; then
+          info "\n Sing-box $(text 28) $(text 37)"
+        else
+          error "\n Sing-box $(text 28) $(text 38) "
+        fi
       fi
       exit 0
       ;;
@@ -3021,13 +3447,24 @@ for z in ${!ALL_PARAMETER[@]}; do
         error "\n Argo $(text 26) "
       elif [ "${STATUS[1]}" = "$(text 28)" ]; then
         cmd_systemctl disable argo
-        [[ "$(systemctl is-active argo)" =~ 'inactive'|'unknown' ]] && info "\n Argo $(text 27) $(text 37)"
+        if [ "$SYSTEM" = 'Alpine' ]; then
+          rc-service argo status &>/dev/null || info "\n Argo $(text 27) $(text 37)"
+        else
+          [[ "$(systemctl is-active argo)" =~ 'inactive'|'unknown' ]] && info "\n Argo $(text 27) $(text 37)"
+        fi
       elif [ "${STATUS[1]}" = "$(text 27)" ]; then
         cmd_systemctl enable argo
         sleep 2
-        if [ "$(systemctl is-active argo)" = 'active' ]; then
-          info "\n Argo $(text 28) $(text 37)"
-          grep -q '\--url' /etc/systemd/system/argo.service && fetch_quicktunnel_domain && export_list
+        if [ "$SYSTEM" = 'Alpine' ]; then
+          if rc-service argo status &>/dev/null; then
+            info "\n Argo $(text 28) $(text 37)"
+            grep -q '\--url' /etc/init.d/argo && fetch_quicktunnel_domain && export_list
+          fi
+        else
+          if [ "$(systemctl is-active argo)" = 'active' ]; then
+            info "\n Argo $(text 28) $(text 37)"
+            grep -q '\--url' /etc/systemd/system/argo.service && fetch_quicktunnel_domain && export_list
+          fi
         fi
       fi
       exit 0
@@ -3039,7 +3476,7 @@ for z in ${!ALL_PARAMETER[@]}; do
       check_install; uninstall; exit 0
       ;;
     -N )
-      [ ! -s $WORK_DIR/list ] && error " Sing-box $(text 26) "; export_list; exit 0
+      [ ! -s ${WORK_DIR}/list ] && error " Sing-box $(text 26) "; export_list; exit 0
       ;;
     -V )
       check_arch; version; exit 0
@@ -3050,11 +3487,8 @@ for z in ${!ALL_PARAMETER[@]}; do
     -R )
       change_protocols; exit 0
       ;;
-    -F )
-      ((z++)); VARIABLE_FILE=${ALL_PARAMETER[z]}; . $VARIABLE_FILE; NONINTERACTIVE_INSTALL=noninteractive_install
-      ;;
     --LANGUAGE )
-      ((z++)); [[ "${ALL_PARAMETER[z]^^}" =~ ^C ]] && L=C || L=E
+      ((z++)); [[ "${ALL_PARAMETER[z]^^}" =~ ^C ]] && LANGUAGE=C || LANGUAGE=E
       ;;
     --CHOOSE_PROTOCOLS )
       ((z++)); CHOOSE_PROTOCOLS=${ALL_PARAMETER[z]}
